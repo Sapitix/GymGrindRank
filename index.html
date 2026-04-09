@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="de" data-theme="dark">
+<html lang="de">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#0c0e18">
-  <title>GrindRank — Gym & Fitness Tracker</title>
+  <title>GrindRank</title>
   <link href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&f[]=general-sans@300,400,500,600,700&display=swap" rel="stylesheet">
 <style>
 /* ═══════════════════════════════════════════════════
@@ -986,1059 +986,414 @@ body {
 @supports (padding: env(safe-area-inset-bottom)) {
   .bottom-nav { padding-bottom: env(safe-area-inset-bottom); }
 }
-</style></head>
+
+</style>
+</head>
 <body>
-  <div id="app">
-    <header class="app-header">
-      <div class="header-left">
-        <svg class="logo" width="28" height="28" viewBox="0 0 32 32" fill="none" aria-label="GrindRank Logo">
-          <path d="M16 2L28 8v10c0 7-5 12-12 14C9 30 4 25 4 18V8l12-6z" stroke="currentColor" stroke-width="2.2" fill="none"/>
-          <path d="M11 17l3 3 7-7" stroke="var(--color-accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <span class="header-title">GrindRank</span>
-      </div>
-      <button class="header-btn" data-action="open-profile" aria-label="Profil">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg>
-      </button>
-    </header>
-
-    <main class="app-main">
-      <!-- HOME -->
-      <section id="view-home" class="view active">
-        <div class="rank-hero">
-          <div class="rank-emblem" id="rank-emblem"><div class="rank-icon"></div></div>
-          <div class="rank-label" id="rank-label">Iron IV</div>
-          <div class="rank-subtitle" id="rank-subtitle">Dein Weg beginnt</div>
-        </div>
-        <div class="xp-section">
-          <div class="xp-info"><span class="xp-current" id="xp-current">0</span><span class="xp-separator">/</span><span class="xp-target" id="xp-target">75</span><span class="xp-label">XP</span></div>
-          <div class="xp-bar-container"><div class="xp-bar-fill" id="xp-bar-fill" style="width:0%"></div></div>
-          <div class="xp-next" id="xp-next">Nächster Rang: Iron III</div>
-        </div>
-        <div class="stats-row">
-          <div class="stat-card"><div class="stat-value" id="stat-workouts">0</div><div class="stat-label">Workouts</div></div>
-          <div class="stat-card"><div class="stat-value" id="stat-runs">0</div><div class="stat-label">Läufe</div></div>
-          <div class="stat-card"><div class="stat-value" id="stat-streak">0</div><div class="stat-label">Streak</div></div>
-          <div class="stat-card"><div class="stat-value" id="stat-total-xp">0</div><div class="stat-label">Gesamt XP</div></div>
-        </div>
-        <div class="section-header"><h2>Letzte Aktivität</h2></div>
-        <div class="activity-list" id="activity-list"><div class="empty-state"><p>Noch keine Aktivität — starte dein erstes Workout.</p></div></div>
-      </section>
-
-      <!-- GYM -->
-      <section id="view-gym" class="view">
-        <div class="view-header"><h2>Gym</h2><button class="btn btn-primary" data-action="new-workout">+ Workout</button></div>
-        <div class="section-header"><h3>Personal Records</h3></div>
-        <div class="pr-list" id="pr-list"><div class="empty-state"><p>Logge dein erstes Workout, um PRs zu tracken.</p></div></div>
-        <div class="section-header"><h3>Workout-Verlauf</h3></div>
-        <div class="workout-history" id="workout-history"><div class="empty-state"><p>Noch keine Workouts.</p></div></div>
-      </section>
-
-      <!-- RUN -->
-      <section id="view-run" class="view">
-        <div class="view-header"><h2>Laufen</h2><button class="btn btn-primary" data-action="new-run">+ Lauf</button></div>
-        <div class="run-stats-grid" id="run-stats">
-          <div class="stat-card"><div class="stat-value" id="run-total-km">0</div><div class="stat-label">Gesamt km</div></div>
-          <div class="stat-card"><div class="stat-value" id="run-total-runs">0</div><div class="stat-label">Läufe</div></div>
-          <div class="stat-card"><div class="stat-value" id="run-best-pace">—</div><div class="stat-label">Bester Pace</div></div>
-          <div class="stat-card"><div class="stat-value" id="run-longest">0</div><div class="stat-label">Längster (km)</div></div>
-        </div>
-        <div class="tips-section">
-          <div class="section-header"><h3>Lauf-Tipps</h3>
-            <button class="btn-icon" data-action="next-tip" aria-label="Nächster Tipp"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
-          </div>
-          <div class="tip-card"><div class="tip-icon">💡</div><p id="tip-text">Starte mit dem Couch-to-5K-Prinzip.</p></div>
-        </div>
-        <div class="section-header"><h3>Lauf-Verlauf</h3></div>
-        <div class="run-history" id="run-history"><div class="empty-state"><p>Noch keine Läufe.</p></div></div>
-      </section>
-
-      <!-- FOOD -->
-      <section id="view-food" class="view">
-        <div class="view-header"><h2>Ernährung</h2>
-          <div class="btn-group">
-            <button class="btn btn-primary" data-action="scan-food">📷 Scan</button>
-            <button class="btn btn-secondary" data-action="add-food">+ Manuell</button>
-          </div>
-        </div>
-        <div class="daily-macros" id="daily-macros">
-          <div class="macro-card macro-calories"><div class="macro-value" id="macro-calories">0</div><div class="macro-label">kcal</div></div>
-          <div class="macro-card"><div class="macro-value" id="macro-protein">0g</div><div class="macro-label">Protein</div></div>
-          <div class="macro-card"><div class="macro-value" id="macro-carbs">0g</div><div class="macro-label">Carbs</div></div>
-          <div class="macro-card"><div class="macro-value" id="macro-fat">0g</div><div class="macro-label">Fett</div></div>
-        </div>
-        <div class="date-nav">
-          <button class="btn-icon" data-action="food-prev-day" aria-label="Vorheriger Tag"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
-          <span class="date-label" id="food-date">Heute</span>
-          <button class="btn-icon" data-action="food-next-day" aria-label="Nächster Tag"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
-        </div>
-        <div class="food-log" id="food-log"><div class="empty-state"><p>Noch keine Lebensmittel für heute.</p></div></div>
-      </section>
-    </main>
-
-    <!-- BOTTOM NAV -->
-    <nav class="bottom-nav">
-      <button class="nav-item active" data-view="home">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/></svg><span>Home</span>
-      </button>
-      <button class="nav-item" data-view="gym">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.5 6.5h-3v11h3M17.5 6.5h3v11h-3M6.5 12h11M2 9.5v5M22 9.5v5"/></svg><span>Gym</span>
-      </button>
-      <button class="nav-item" data-view="run">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><path d="M7 20l3-8 2.5 2L16 9"/><path d="M10 12l-2 8"/><path d="M16 9l2 4h3"/></svg><span>Laufen</span>
-      </button>
-      <button class="nav-item" data-view="food">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3"/></svg><span>Food</span>
-      </button>
-    </nav>
-
-    <!-- MODALS -->
-    <!-- Workout Modal -->
-    <div class="modal-overlay" id="modal-workout">
-      <div class="modal">
-        <div class="modal-header"><h3>Workout loggen</h3><button class="btn-close" data-action="close-modal">&times;</button></div>
-        <div class="modal-body">
-          <div class="form-group"><label>Datum</label><input type="date" id="workout-date"></div>
-          <div class="form-group"><label>Notiz (optional)</label><input type="text" id="workout-notes" placeholder="z.B. Push Day"></div>
-          <div class="exercises-container" id="exercises-container"></div>
-          <button class="btn btn-secondary btn-full" data-action="add-exercise">+ Übung hinzufügen</button>
-        </div>
-        <div class="modal-footer"><button class="btn btn-primary btn-full" data-action="save-workout">Workout speichern</button></div>
-      </div>
+<div id="app">
+  <header class="app-header">
+    <div class="header-left">
+      <svg class="logo" width="28" height="28" viewBox="0 0 32 32" fill="none"><path d="M16 2L28 8v10c0 7-5 12-12 14C9 30 4 25 4 18V8l12-6z" stroke="currentColor" stroke-width="2.2" fill="none"/><path d="M11 17l3 3 7-7" stroke="var(--color-accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="header-title">GrindRank</span>
     </div>
+    <button class="header-btn" data-action="open-profile"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg></button>
+  </header>
 
-    <!-- Run Modal -->
-    <div class="modal-overlay" id="modal-run">
-      <div class="modal">
-        <div class="modal-header"><h3>Lauf loggen</h3><button class="btn-close" data-action="close-modal">&times;</button></div>
-        <div class="modal-body">
-          <div class="form-group"><label>Datum</label><input type="date" id="run-date"></div>
-          <div class="form-row">
-            <div class="form-group"><label>Distanz (km)</label><input type="number" id="run-distance" step="0.1" min="0" placeholder="5.0"></div>
-            <div class="form-group"><label>Dauer (min)</label><input type="number" id="run-duration" step="1" min="0" placeholder="30"></div>
-          </div>
-          <div class="form-group"><label>Notiz (optional)</label><input type="text" id="run-notes" placeholder="z.B. Easy Run"></div>
-        </div>
-        <div class="modal-footer"><button class="btn btn-primary btn-full" data-action="save-run">Lauf speichern</button></div>
+  <main class="app-main">
+    <!-- HOME -->
+    <section id="view-home" class="view active">
+      <div class="rank-hero">
+        <div class="rank-emblem" id="rank-emblem"><div class="rank-icon"></div></div>
+        <div class="rank-label" id="rank-label">Iron IV</div>
+        <div class="rank-subtitle" id="rank-subtitle">Dein Weg beginnt</div>
       </div>
-    </div>
-
-    <!-- Food Modal -->
-    <div class="modal-overlay" id="modal-food">
-      <div class="modal">
-        <div class="modal-header"><h3>Lebensmittel hinzufügen</h3><button class="btn-close" data-action="close-modal">&times;</button></div>
-        <div class="modal-body">
-          <div class="form-group"><label>Name</label><input type="text" id="food-name" placeholder="z.B. Haferflocken"></div>
-          <div class="form-group"><label>Menge (g/ml)</label><input type="number" id="food-amount" step="1" min="0" placeholder="100"></div>
-          <div class="form-row">
-            <div class="form-group"><label>kcal</label><input type="number" id="food-calories" step="1" min="0" placeholder="350"></div>
-            <div class="form-group"><label>Protein (g)</label><input type="number" id="food-protein" step="0.1" min="0" placeholder="13"></div>
-          </div>
-          <div class="form-row">
-            <div class="form-group"><label>Carbs (g)</label><input type="number" id="food-carbs" step="0.1" min="0" placeholder="60"></div>
-            <div class="form-group"><label>Fett (g)</label><input type="number" id="food-fat" step="0.1" min="0" placeholder="7"></div>
-          </div>
-        </div>
-        <div class="modal-footer"><button class="btn btn-primary btn-full" data-action="save-food">Speichern</button></div>
+      <div class="xp-section">
+        <div class="xp-info"><span class="xp-current" id="xp-current">0</span><span class="xp-separator">/</span><span class="xp-target" id="xp-target">75</span><span class="xp-label">XP</span></div>
+        <div class="xp-bar-container"><div class="xp-bar-fill" id="xp-bar-fill" style="width:0%"></div></div>
+        <div class="xp-next" id="xp-next"></div>
       </div>
-    </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-value" id="stat-workouts">0</div><div class="stat-label">Workouts</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-runs">0</div><div class="stat-label">Läufe</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-streak">0</div><div class="stat-label">Streak</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-total-xp">0</div><div class="stat-label">Gesamt XP</div></div>
+      </div>
+      <div class="section-header"><h2>Letzte Aktivität</h2></div>
+      <div class="activity-list" id="activity-list"><div class="empty-state"><p>Noch keine Aktivität.</p></div></div>
+    </section>
 
-    <!-- Scanner Modal (Kamera Auto-Scan + Produkt-Suche) -->
-    <div class="modal-overlay" id="modal-scanner">
-      <div class="modal">
-        <div class="modal-header"><h3>Produkt scannen</h3><button class="btn-close" data-action="close-modal">&times;</button></div>
-        <div class="modal-body" style="padding:0">
-          <!-- Kamera Area -->
-          <div id="scanner-cam-area" style="position:relative;background:#000">
-            <video id="scanner-video" autoplay playsinline style="width:100%;aspect-ratio:4/3;display:block;object-fit:cover"></video>
-            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">
-              <div style="width:220px;height:100px;border:2px solid var(--color-accent);border-radius:var(--radius-md);box-shadow:0 0 0 9999px rgba(0,0,0,0.45);animation:pulse-border 2s infinite"></div>
-            </div>
-            <div id="scanner-status" style="position:absolute;bottom:0;left:0;right:0;text-align:center;padding:var(--space-2);background:rgba(0,0,0,0.6);font-size:var(--text-xs);color:var(--color-text-muted)">Barcode in den Rahmen halten...</div>
-          </div>
-          <div style="padding:var(--space-4)">
-            <!-- Barcode manuell -->
-            <p style="font-size:var(--text-xs);color:var(--color-text-faint);margin-bottom:var(--space-2)">Oder Barcode-Nr. manuell eingeben:</p>
-            <div style="display:flex;gap:var(--space-2);margin-bottom:var(--space-3)">
-              <input type="text" id="manual-barcode" inputmode="numeric" placeholder="z.B. 4005500068648" style="flex:1;padding:var(--space-2) var(--space-3);background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-text);font-size:var(--text-sm);outline:none">
-              <button class="btn btn-primary" data-action="manual-barcode-search" style="padding:var(--space-2) var(--space-3)">Suchen</button>
-            </div>
-            <!-- Produkt-Name Suche -->
-            <p style="font-size:var(--text-xs);color:var(--color-text-faint);margin-bottom:var(--space-2)">Oder Produkt per Name suchen:</p>
-            <div style="display:flex;gap:var(--space-2);margin-bottom:var(--space-3)">
-              <input type="text" id="product-name-search" placeholder="z.B. Nutella, Haferflocken..." style="flex:1;padding:var(--space-2) var(--space-3);background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-text);font-size:var(--text-sm);outline:none">
-              <button class="btn btn-secondary" data-action="search-product-name" style="padding:var(--space-2) var(--space-3)">Suchen</button>
-            </div>
-            <!-- Suchergebnisse -->
-            <div id="search-results-list" style="display:none;max-height:200px;overflow-y:auto;margin-bottom:var(--space-3)"></div>
-            <!-- Status -->
-            <p class="scanner-hint" id="scanner-hint" style="display:none;font-size:var(--text-sm);color:var(--color-text-muted);margin-bottom:var(--space-3)"></p>
-            <!-- Gefundenes Produkt -->
-            <div class="scanner-result" id="scanner-result" style="display:none">
-              <div class="scanner-product" id="scanner-product" style="background:var(--color-surface-2);border-radius:var(--radius-md);padding:var(--space-3);margin-bottom:var(--space-3)"></div>
-              <button class="btn btn-primary btn-full" data-action="add-scanned-food">Übernehmen & bearbeiten</button>
-            </div>
-          </div>
+    <!-- GYM -->
+    <section id="view-gym" class="view">
+      <div class="view-header"><h2>Gym</h2><button class="btn btn-primary" data-action="new-workout">+ Workout</button></div>
+      <div class="section-header"><h3>Personal Records</h3></div>
+      <div class="pr-list" id="pr-list"><div class="empty-state"><p>Logge dein erstes Workout.</p></div></div>
+      <div class="section-header"><h3>Workout-Verlauf</h3></div>
+      <div class="workout-history" id="workout-history"><div class="empty-state"><p>Noch keine Workouts.</p></div></div>
+    </section>
+
+    <!-- RUN -->
+    <section id="view-run" class="view">
+      <div class="view-header"><h2>Laufen</h2><button class="btn btn-primary" data-action="new-run">+ Lauf</button></div>
+      <div class="run-stats-grid">
+        <div class="stat-card"><div class="stat-value" id="run-total-km">0</div><div class="stat-label">Gesamt km</div></div>
+        <div class="stat-card"><div class="stat-value" id="run-total-runs">0</div><div class="stat-label">Läufe</div></div>
+        <div class="stat-card"><div class="stat-value" id="run-best-pace">—</div><div class="stat-label">Bester Pace</div></div>
+        <div class="stat-card"><div class="stat-value" id="run-longest">0</div><div class="stat-label">Längster km</div></div>
+      </div>
+      <div class="tips-section">
+        <div class="section-header"><h3>Lauf-Tipps</h3><button class="btn-icon" data-action="next-tip"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button></div>
+        <div class="tip-card"><div class="tip-icon">💡</div><p id="tip-text"></p></div>
+      </div>
+      <div class="section-header"><h3>Lauf-Verlauf</h3></div>
+      <div class="run-history" id="run-history"><div class="empty-state"><p>Noch keine Läufe.</p></div></div>
+    </section>
+
+    <!-- FOOD -->
+    <section id="view-food" class="view">
+      <div class="view-header"><h2>Ernährung</h2>
+        <div class="btn-group"><button class="btn btn-primary" data-action="scan-food">📷 Scan</button><button class="btn btn-secondary" data-action="add-food">+ Manuell</button></div>
+      </div>
+      <div class="daily-macros">
+        <div class="macro-card macro-calories"><div class="macro-value" id="macro-calories">0</div><div class="macro-label">kcal</div></div>
+        <div class="macro-card"><div class="macro-value" id="macro-protein">0g</div><div class="macro-label">Protein</div></div>
+        <div class="macro-card"><div class="macro-value" id="macro-carbs">0g</div><div class="macro-label">Carbs</div></div>
+        <div class="macro-card"><div class="macro-value" id="macro-fat">0g</div><div class="macro-label">Fett</div></div>
+      </div>
+      <div class="date-nav">
+        <button class="btn-icon" data-action="food-prev-day"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <span class="date-label" id="food-date">Heute</span>
+        <button class="btn-icon" data-action="food-next-day"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
+      </div>
+      <div class="food-log" id="food-log"><div class="empty-state"><p>Noch keine Lebensmittel.</p></div></div>
+    </section>
+  </main>
+
+  <!-- NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-view="home"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/></svg><span>Home</span></button>
+    <button class="nav-item" data-view="gym"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.5 6.5h-3v11h3M17.5 6.5h3v11h-3M6.5 12h11M2 9.5v5M22 9.5v5"/></svg><span>Gym</span></button>
+    <button class="nav-item" data-view="run"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="2"/><path d="M7 20l3-8 2.5 2L16 9"/><path d="M10 12l-2 8"/><path d="M16 9l2 4h3"/></svg><span>Laufen</span></button>
+    <button class="nav-item" data-view="food"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3"/></svg><span>Food</span></button>
+  </nav>
+
+  <!-- WORKOUT MODAL -->
+  <div class="modal-overlay" id="modal-workout"><div class="modal">
+    <div class="modal-header"><h3>Workout loggen</h3><button class="btn-close" data-action="close-modal">&times;</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label>Datum</label><input type="date" id="workout-date"></div>
+      <div class="form-group"><label>Notiz</label><input type="text" id="workout-notes" placeholder="z.B. Push Day"></div>
+      <div id="exercises-container"></div>
+      <button class="btn btn-secondary btn-full" data-action="add-exercise">+ Übung</button>
+    </div>
+    <div class="modal-footer"><button class="btn btn-primary btn-full" data-action="save-workout">Speichern</button></div>
+  </div></div>
+
+  <!-- RUN MODAL -->
+  <div class="modal-overlay" id="modal-run"><div class="modal">
+    <div class="modal-header"><h3>Lauf loggen</h3><button class="btn-close" data-action="close-modal">&times;</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label>Datum</label><input type="date" id="run-date"></div>
+      <div class="form-row"><div class="form-group"><label>Distanz (km)</label><input type="number" id="run-distance" step="0.1" min="0" placeholder="5.0"></div><div class="form-group"><label>Dauer (min)</label><input type="number" id="run-duration" step="1" min="0" placeholder="30"></div></div>
+      <div class="form-group"><label>Notiz</label><input type="text" id="run-notes" placeholder="z.B. Easy Run"></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-primary btn-full" data-action="save-run">Speichern</button></div>
+  </div></div>
+
+  <!-- FOOD MODAL -->
+  <div class="modal-overlay" id="modal-food"><div class="modal">
+    <div class="modal-header"><h3>Lebensmittel</h3><button class="btn-close" data-action="close-modal">&times;</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label>Name</label><input type="text" id="food-name" placeholder="z.B. Haferflocken"></div>
+      <div class="form-group"><label>Menge (g)</label><input type="number" id="food-amount" step="1" min="0" placeholder="100"></div>
+      <div class="form-row"><div class="form-group"><label>kcal</label><input type="number" id="food-calories" step="1" min="0"></div><div class="form-group"><label>Protein (g)</label><input type="number" id="food-protein" step="0.1" min="0"></div></div>
+      <div class="form-row"><div class="form-group"><label>Carbs (g)</label><input type="number" id="food-carbs" step="0.1" min="0"></div><div class="form-group"><label>Fett (g)</label><input type="number" id="food-fat" step="0.1" min="0"></div></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-primary btn-full" data-action="save-food">Speichern</button></div>
+  </div></div>
+
+  <!-- SCANNER MODAL -->
+  <div class="modal-overlay" id="modal-scanner"><div class="modal">
+    <div class="modal-header"><h3>Produkt scannen</h3><button class="btn-close" data-action="close-scanner">&times;</button></div>
+    <div class="modal-body" style="padding:0">
+      <div id="cam-box" style="position:relative;background:#000">
+        <video id="scan-video" autoplay playsinline style="width:100%;aspect-ratio:4/3;display:block;object-fit:cover"></video>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">
+          <div style="width:220px;height:100px;border:2px solid var(--color-accent);border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,0.45)"></div>
+        </div>
+        <div id="cam-status" style="position:absolute;bottom:0;left:0;right:0;text-align:center;padding:8px;background:rgba(0,0,0,0.7);font-size:13px;color:#8b8aa0">Kamera startet...</div>
+      </div>
+      <div style="padding:16px">
+        <p style="font-size:12px;color:#5c5b72;margin-bottom:8px">Barcode-Nr. eingeben:</p>
+        <div style="display:flex;gap:8px;margin-bottom:16px">
+          <input type="text" id="inp-barcode" inputmode="numeric" placeholder="z.B. 4005500068648" style="flex:1;padding:10px;background:#1a1e35;border:1px solid #2a2f4a;border-radius:8px;color:#e8e6f0;font-size:15px;outline:none">
+          <button class="btn btn-primary" data-action="do-barcode-search">Suchen</button>
+        </div>
+        <p style="font-size:12px;color:#5c5b72;margin-bottom:8px">Oder Produkt per Name suchen:</p>
+        <div style="display:flex;gap:8px;margin-bottom:12px">
+          <input type="text" id="inp-product" placeholder="z.B. Nutella, Haferflocken" style="flex:1;padding:10px;background:#1a1e35;border:1px solid #2a2f4a;border-radius:8px;color:#e8e6f0;font-size:15px;outline:none">
+          <button class="btn btn-secondary" data-action="do-name-search">Suchen</button>
+        </div>
+        <div id="scan-msg" style="display:none;font-size:14px;color:#8b8aa0;margin-bottom:12px"></div>
+        <div id="scan-results" style="display:none;max-height:200px;overflow-y:auto;margin-bottom:12px"></div>
+        <div id="scan-found" style="display:none">
+          <div id="scan-product" style="background:#1a1e35;border:1px solid #2a2f4a;border-radius:8px;padding:12px;margin-bottom:12px"></div>
+          <button class="btn btn-primary btn-full" data-action="use-scanned">Übernehmen</button>
         </div>
       </div>
     </div>
+  </div></div>
 
-    <!-- Profile Modal -->
-    <div class="modal-overlay" id="modal-profile">
-      <div class="modal">
-        <div class="modal-header"><h3>Profil & Einstellungen</h3><button class="btn-close" data-action="close-modal">&times;</button></div>
-        <div class="modal-body">
-          <div class="form-group"><label>Name</label><input type="text" id="profile-name" placeholder="Dein Name"></div>
-          <div class="form-group"><label>Körpergewicht (kg)</label><input type="number" id="profile-weight" step="0.1" min="0" placeholder="80"></div>
-          <div class="profile-actions">
-            <button class="btn btn-secondary btn-full" data-action="export-csv">📁 Daten als CSV exportieren</button>
-            <label class="btn btn-secondary btn-full" style="text-align:center;cursor:pointer">📂 CSV importieren<input type="file" id="import-csv" accept=".csv" style="display:none"></label>
-            <button class="btn btn-danger btn-full" data-action="reset-data">🗑 Alle Daten löschen</button>
-          </div>
-        </div>
-        <div class="modal-footer"><button class="btn btn-primary btn-full" data-action="save-profile">Profil speichern</button></div>
+  <!-- PROFILE MODAL -->
+  <div class="modal-overlay" id="modal-profile"><div class="modal">
+    <div class="modal-header"><h3>Profil</h3><button class="btn-close" data-action="close-modal">&times;</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label>Name</label><input type="text" id="profile-name" placeholder="Dein Name"></div>
+      <div class="form-group"><label>Körpergewicht (kg)</label><input type="number" id="profile-weight" step="0.1" min="0"></div>
+      <div class="profile-actions">
+        <button class="btn btn-secondary btn-full" data-action="export-csv">📁 CSV Export</button>
+        <label class="btn btn-secondary btn-full" style="text-align:center;cursor:pointer">📂 CSV Import<input type="file" id="import-csv" accept=".csv" style="display:none"></label>
+        <button class="btn btn-danger btn-full" data-action="reset-data">🗑 Alles löschen</button>
       </div>
     </div>
+    <div class="modal-footer"><button class="btn btn-primary btn-full" data-action="save-profile">Speichern</button></div>
+  </div></div>
 
-    <!-- Rank Up Overlay -->
-    <div class="rankup-overlay" id="rankup-overlay">
-      <div class="rankup-content">
-        <div class="rankup-badge" id="rankup-badge"></div>
-        <div class="rankup-text">AUFSTIEG!</div>
-        <div class="rankup-new" id="rankup-new"></div>
-        <button class="btn btn-primary" data-action="close-rankup">Weiter</button>
-      </div>
+  <!-- RANKUP -->
+  <div class="rankup-overlay" id="rankup-overlay">
+    <div class="rankup-content">
+      <div class="rankup-badge" id="rankup-badge"></div>
+      <div class="rankup-text">AUFSTIEG!</div>
+      <div class="rankup-new" id="rankup-new"></div>
+      <button class="btn btn-primary" data-action="close-rankup">Weiter</button>
     </div>
   </div>
-
+</div>
 <script>
-/* ═══════════════════════════════════════════════════
-   GrindRank — Gym & Fitness Tracker (App Logic)
-   Lokale Version — localStorage direkt
-   ═══════════════════════════════════════════════════ */
+/* GrindRank v2 — komplett neu */
 
-// ── RANK SYSTEM ──
 const RANKS = [
-  { name: 'Iron',        divisions: [4,3,2,1], color: '#6b6560', icon: '🛡️', xpPerDiv: 75 },
-  { name: 'Bronze',      divisions: [4,3,2,1], color: '#a0714f', icon: '⚔️', xpPerDiv: 100 },
-  { name: 'Silver',      divisions: [4,3,2,1], color: '#a8b4bf', icon: '🌟', xpPerDiv: 150 },
-  { name: 'Gold',        divisions: [4,3,2,1], color: '#ffd700', icon: '👑', xpPerDiv: 200 },
-  { name: 'Platinum',    divisions: [4,3,2,1], color: '#00c9a7', icon: '💎', xpPerDiv: 300 },
-  { name: 'Emerald',     divisions: [4,3,2,1], color: '#50c878', icon: '🟢', xpPerDiv: 400 },
-  { name: 'Diamond',     divisions: [4,3,2,1], color: '#b9f2ff', icon: '💠', xpPerDiv: 500 },
-  { name: 'Master',      divisions: [0],       color: '#9b59b6', icon: '🏆', xpPerDiv: 3000 },
-  { name: 'Grandmaster', divisions: [0],       color: '#ff4444', icon: '🔥', xpPerDiv: 5000 },
-  { name: 'Challenger',  divisions: [0],       color: '#f0c040', icon: '⭐', xpPerDiv: 99999 },
+  { name:'Iron',divisions:[4,3,2,1],color:'#6b6560',icon:'🛡️',xpPerDiv:75 },
+  { name:'Bronze',divisions:[4,3,2,1],color:'#a0714f',icon:'⚔️',xpPerDiv:100 },
+  { name:'Silver',divisions:[4,3,2,1],color:'#a8b4bf',icon:'🌟',xpPerDiv:150 },
+  { name:'Gold',divisions:[4,3,2,1],color:'#ffd700',icon:'👑',xpPerDiv:200 },
+  { name:'Platinum',divisions:[4,3,2,1],color:'#00c9a7',icon:'💎',xpPerDiv:300 },
+  { name:'Emerald',divisions:[4,3,2,1],color:'#50c878',icon:'🟢',xpPerDiv:400 },
+  { name:'Diamond',divisions:[4,3,2,1],color:'#b9f2ff',icon:'💠',xpPerDiv:500 },
+  { name:'Master',divisions:[0],color:'#9b59b6',icon:'🏆',xpPerDiv:3000 },
+  { name:'Grandmaster',divisions:[0],color:'#ff4444',icon:'🔥',xpPerDiv:5000 },
+  { name:'Challenger',divisions:[0],color:'#f0c040',icon:'⭐',xpPerDiv:99999 },
 ];
+const RT=[];(()=>{let c=0;for(const r of RANKS)for(const d of r.divisions){RT.push({name:d>0?`${r.name} ${d}`:r.name,rn:r.name,div:d,color:r.color,icon:r.icon,xs:c});c+=r.xpPerDiv;}})();
+function rankFor(xp){let r=RT[0];for(let i=RT.length-1;i>=0;i--)if(xp>=RT[i].xs){r=RT[i];break;}const i=RT.indexOf(r),n=RT[i+1]||null,xi=xp-r.xs,xn=n?n.xs-r.xs:0;return{...r,i,n,xi,xn,p:xn>0?xi/xn:1};}
 
-function buildRankTable() {
-  const table = [];
-  let cumXp = 0;
-  for (const rank of RANKS) {
-    for (const div of rank.divisions) {
-      table.push({
-        name: div > 0 ? `${rank.name} ${div}` : rank.name,
-        rankName: rank.name,
-        division: div,
-        color: rank.color,
-        icon: rank.icon,
-        xpStart: cumXp,
-      });
-      cumXp += rank.xpPerDiv;
-    }
+const TIPS=["Starte mit Couch-to-5K: 1 Min Laufen, 1 Min Gehen. Jede Woche steigern.","Lauf langsam genug, dass du dich unterhalten könntest.","Investiere in gute Laufschuhe — wichtigstes Equipment.","10%-Regel: Nie mehr als 10% Volumen pro Woche steigern.","5 Min Aufwärmen mit zügigem Gehen vor dem Lauf.","3x pro Woche reicht. Dein Körper braucht Erholungstage.","Atem-Rhythmus: 3 Schritte ein, 2 Schritte aus.","Musik oder Podcasts wirken Wunder für die Motivation.","Morgens laufen gibt dir Energie für den ganzen Tag.","Konkretes Ziel setzen: z.B. 5 km in 30 Min.","500ml Wasser 1-2h vor dem Lauf trinken.","Nach dem Lauf dehnen, nicht davor. Dynamisch aufwärmen.","Vergleich dich nur mit dir selbst — jeder Lauf zählt.","Bei Regen laufen fühlt sich danach unglaublich gut an.","1x pro Woche Intervalltraining: 30s Sprint, 90s Gehen, 8x.","1-2h vor dem Lauf leicht essen: Banane, Toast, Haferflocken.","Finde eine schöne Laufstrecke — Park, Strand, Wald.","Tracke deine Läufe. Fortschritt sehen = bester Motivator."];
+
+const SKEY='grindrank_data';
+const DDEF={profile:{name:'',bodyWeight:0,joinDate:new Date().toISOString().slice(0,10)},workouts:[],runs:[],foodLog:{},xp:0,xpHistory:[]};
+function ld(){try{const r=localStorage.getItem(SKEY);if(r)return JSON.parse(r);}catch(e){}return JSON.parse(JSON.stringify(DDEF));}
+let D=ld(),tipIdx=0,foodDate=new Date().toISOString().slice(0,10),scanProd=null;
+function sv(){try{localStorage.setItem(SKEY,JSON.stringify(D));}catch(e){}}
+function gid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function fd(d){const t=new Date().toISOString().slice(0,10),y=new Date(Date.now()-864e5).toISOString().slice(0,10);if(d===t)return'Heute';if(d===y)return'Gestern';const p=d.split('-');return`${p[2]}.${p[1]}.${p[0]}`;}
+
+function addXP(a,reason){const old=rankFor(D.xp);D.xp+=a;D.xpHistory.push({date:new Date().toISOString(),amount:a,reason});const nw=rankFor(D.xp);sv();updDash();if(nw.i>old.i)showRankUp(nw);}
+
+function streak(){const s=new Set();D.workouts.forEach(w=>s.add(w.date));D.runs.forEach(r=>s.add(r.date));if(!s.size)return 0;let c=0,d=new Date();d.setHours(0,0,0,0);if(!s.has(d.toISOString().slice(0,10)))d.setDate(d.getDate()-1);while(s.has(d.toISOString().slice(0,10))){c++;d.setDate(d.getDate()-1);}return c;}
+
+function updDash(){
+  const r=rankFor(D.xp);
+  const e=document.getElementById('rank-emblem');e.style.borderColor=r.color;e.style.boxShadow=`0 0 30px ${r.color}40`;
+  document.querySelector('.rank-icon').textContent=r.icon;
+  const l=document.getElementById('rank-label');l.textContent=r.name;l.style.color=r.color;
+  const sub={Iron:'Dein Weg beginnt',Bronze:'Aufsteigend',Silver:'Solide Basis',Gold:'Respektabel',Platinum:'Elite-Niveau',Emerald:'Unaufhaltsam',Diamond:'Top-Performer',Master:'Meisterklasse',Grandmaster:'Legende',Challenger:'Unerreichbar'};
+  document.getElementById('rank-subtitle').textContent=sub[r.rn]||'';
+  document.getElementById('xp-current').textContent=r.xi;
+  document.getElementById('xp-target').textContent=r.xn||'∞';
+  document.getElementById('xp-bar-fill').style.width=`${Math.min(r.p*100,100)}%`;
+  document.getElementById('xp-bar-fill').style.background=`linear-gradient(90deg,${r.color},${r.n?r.n.color:r.color})`;
+  document.getElementById('xp-next').textContent=r.n?`Nächster Rang: ${r.n.name}`:'Höchster Rang!';
+  document.getElementById('stat-workouts').textContent=D.workouts.length;
+  document.getElementById('stat-runs').textContent=D.runs.length;
+  document.getElementById('stat-streak').textContent=streak();
+  document.getElementById('stat-total-xp').textContent=D.xp;
+  // Activity
+  const items=[];
+  D.workouts.slice(-10).forEach(w=>items.push({t:'gym',ic:'🏋️',title:w.notes||`${w.exercises.length} Übungen`,date:w.date,xp:w.xpEarned||0,ts:new Date(w.date).getTime()}));
+  D.runs.slice(-10).forEach(r=>items.push({t:'run',ic:'🏃',title:`${r.distance}km in ${r.duration}min`,date:r.date,xp:r.xpEarned||0,ts:new Date(r.date).getTime()}));
+  items.sort((a,b)=>b.ts-a.ts);
+  const c=document.getElementById('activity-list');
+  if(!items.length){c.innerHTML='<div class="empty-state"><p>Noch keine Aktivität.</p></div>';return;}
+  c.innerHTML=items.slice(0,8).map(i=>`<div class="activity-item"><div class="activity-icon ${i.t}">${i.ic}</div><div class="activity-info"><div class="activity-title">${i.title}</div><div class="activity-meta">${fd(i.date)}</div></div><div class="activity-xp">+${i.xp} XP</div></div>`).join('');
+}
+
+// GYM
+function updGym(){
+  const prs={};
+  D.workouts.forEach(w=>w.exercises.forEach(ex=>{const n=ex.name.toLowerCase().trim();if(!n)return;ex.sets.forEach(s=>{const e=s.weight*(1+s.reps/30);if(!prs[n]||e>prs[n].e)prs[n]={name:ex.name,w:s.weight,r:s.reps,e}});}));
+  const pc=document.getElementById('pr-list'),ent=Object.values(prs).sort((a,b)=>b.e-a.e);
+  pc.innerHTML=ent.length?ent.map(p=>`<div class="pr-item"><div class="pr-name">${p.name}</div><div class="pr-value">${p.w}kg × ${p.r}</div></div>`).join(''):'<div class="empty-state"><p>Logge dein erstes Workout.</p></div>';
+  const hc=document.getElementById('workout-history'),wk=[...D.workouts].reverse().slice(0,20);
+  hc.innerHTML=wk.length?wk.map(w=>`<div class="history-item"><div class="history-header"><span class="history-date">${fd(w.date)}</span><span class="history-xp">+${w.xpEarned||0} XP</span></div>${w.notes?`<div class="history-title">${w.notes}</div>`:''}<div class="history-exercises">${w.exercises.map(e=>`<span class="exercise-tag">${e.name} (${e.sets.length}×)</span>`).join('')}</div></div>`).join(''):'<div class="empty-state"><p>Noch keine Workouts.</p></div>';
+}
+
+function openWorkout(){document.getElementById('workout-date').value=new Date().toISOString().slice(0,10);document.getElementById('workout-notes').value='';document.getElementById('exercises-container').innerHTML='';addExBlock();document.getElementById('modal-workout').classList.add('active');}
+function addExBlock(){const c=document.getElementById('exercises-container'),id=gid();c.insertAdjacentHTML('beforeend',`<div class="exercise-block" data-eid="${id}"><div class="exercise-block-header"><input type="text" placeholder="Übung (z.B. Bench Press)" class="ex-name" list="ex-dl"><button class="exercise-remove" data-action="rm-ex" data-id="${id}">&times;</button></div><table class="sets-table"><thead><tr><th>Set</th><th>kg</th><th>Reps</th><th></th></tr></thead><tbody class="sets-body"><tr><td class="set-num">1</td><td><input type="number" class="set-w" step="0.5" min="0" placeholder="0"></td><td><input type="number" class="set-r" step="1" min="0" placeholder="0"></td><td><button class="set-remove" data-action="rm-set">&times;</button></td></tr></tbody></table><button class="add-set-btn" data-action="add-set" data-id="${id}">+ Set</button></div>`);if(!document.getElementById('ex-dl')){const dl=document.createElement('datalist');dl.id='ex-dl';['Bench Press','Squat','Deadlift','Overhead Press','Barbell Row','Pull-Ups','Lat Pulldown','Incline Bench','Leg Press','Romanian Deadlift','Bicep Curl','Tricep Extension','Lateral Raise','Dips','Chin-Ups'].forEach(s=>{const o=document.createElement('option');o.value=s;dl.appendChild(o);});D.workouts.forEach(w=>w.exercises.forEach(e=>{if(e.name){const o=document.createElement('option');o.value=e.name;dl.appendChild(o);}}));document.body.appendChild(dl);}}
+function addSet(eid){const b=document.querySelector(`[data-eid="${eid}"]`);if(!b)return;const tb=b.querySelector('.sets-body'),n=tb.children.length+1,tr=document.createElement('tr');tr.innerHTML=`<td class="set-num">${n}</td><td><input type="number" class="set-w" step="0.5" min="0" placeholder="0"></td><td><input type="number" class="set-r" step="1" min="0" placeholder="0"></td><td><button class="set-remove" data-action="rm-set">&times;</button></td>`;tb.appendChild(tr);}
+function saveWorkout(){const dt=document.getElementById('workout-date').value,nt=document.getElementById('workout-notes').value.trim(),blocks=document.querySelectorAll('.exercise-block'),exs=[];blocks.forEach(b=>{const nm=b.querySelector('.ex-name').value.trim();if(!nm)return;const sets=[];b.querySelectorAll('.sets-body tr').forEach(r=>{const w=parseFloat(r.querySelector('.set-w').value)||0,rp=parseInt(r.querySelector('.set-r').value)||0;if(w>0||rp>0)sets.push({weight:w,reps:rp});});if(sets.length)exs.push({name:nm,sets});});if(!exs.length)return;let pc=0;const op={};D.workouts.forEach(w=>w.exercises.forEach(e=>{const n=e.name.toLowerCase().trim();e.sets.forEach(s=>{const v=s.weight*(1+s.reps/30);if(!op[n]||v>op[n])op[n]=v;});}));exs.forEach(e=>{const n=e.name.toLowerCase().trim();e.sets.forEach(s=>{const v=s.weight*(1+s.reps/30);if(!op[n]||v>op[n]){pc++;op[n]=v;}});});const ts=exs.reduce((s,e)=>s+e.sets.length,0),xp=30+ts*3+pc*75;D.workouts.push({id:gid(),date:dt,notes:nt,exercises:exs,xpEarned:xp});sv();addXP(xp,`Workout: ${nt||exs.map(e=>e.name).join(', ')}`);closeModals();updGym();}
+
+// RUN
+function updRun(){const rs=D.runs,tk=rs.reduce((s,r)=>s+r.distance,0),lr=rs.length?Math.max(...rs.map(r=>r.distance)):0;let bp=null;rs.forEach(r=>{if(r.distance>0){const p=r.duration/r.distance;if(!bp||p<bp)bp=p;}});document.getElementById('run-total-km').textContent=tk.toFixed(1);document.getElementById('run-total-runs').textContent=rs.length;document.getElementById('run-best-pace').textContent=bp?`${Math.floor(bp)}'${String(Math.round((bp%1)*60)).padStart(2,'0')}"`:' —';document.getElementById('run-longest').textContent=lr.toFixed(1);const c=document.getElementById('run-history'),rr=[...rs].reverse().slice(0,20);c.innerHTML=rr.length?rr.map(r=>{const p=r.distance>0?r.duration/r.distance:0,ps=p>0?`${Math.floor(p)}'${String(Math.round((p%1)*60)).padStart(2,'0')}" /km`:'';return`<div class="history-item"><div class="history-header"><span class="history-date">${fd(r.date)}</span><span class="history-xp">+${r.xpEarned||0} XP</span></div><div class="history-title">${r.distance}km in ${r.duration}min</div><div class="history-detail">${ps}${r.notes?' · '+r.notes:''}</div></div>`;}).join(''):'<div class="empty-state"><p>Noch keine Läufe.</p></div>';}
+function openRun(){document.getElementById('run-date').value=new Date().toISOString().slice(0,10);document.getElementById('run-distance').value='';document.getElementById('run-duration').value='';document.getElementById('run-notes').value='';document.getElementById('modal-run').classList.add('active');}
+function saveRun(){const dt=document.getElementById('run-date').value,di=parseFloat(document.getElementById('run-distance').value)||0,du=parseInt(document.getElementById('run-duration').value)||0,nt=document.getElementById('run-notes').value.trim();if(di<=0&&du<=0)return;const xp=25+Math.round(di*5);D.runs.push({id:gid(),date:dt,distance:di,duration:du,notes:nt,xpEarned:xp});sv();addXP(xp,`Lauf: ${di}km`);closeModals();updRun();}
+
+// FOOD
+function updFood(){document.getElementById('food-date').textContent=fd(foodDate);const items=D.foodLog[foodDate]||[];let cal=0,pr=0,ca=0,fa=0;items.forEach(i=>{cal+=i.calories;pr+=i.protein;ca+=i.carbs;fa+=i.fat;});document.getElementById('macro-calories').textContent=Math.round(cal);document.getElementById('macro-protein').textContent=Math.round(pr)+'g';document.getElementById('macro-carbs').textContent=Math.round(ca)+'g';document.getElementById('macro-fat').textContent=Math.round(fa)+'g';const c=document.getElementById('food-log');if(!items.length){c.innerHTML=`<div class="empty-state"><p>Noch keine Lebensmittel für ${fd(foodDate)}.</p></div>`;return;}c.innerHTML=items.map((it,i)=>`<div class="food-item"><div class="food-item-info"><div class="food-item-name">${it.name}${it.amount?' ('+it.amount+'g)':''}</div><div class="food-item-macros">P:${it.protein}g · C:${it.carbs}g · F:${it.fat}g</div></div><div class="food-item-cal">${it.calories} kcal</div><button class="food-item-delete" data-action="del-food" data-date="${foodDate}" data-idx="${i}">&times;</button></div>`).join('');}
+function openFood(pf){document.getElementById('food-name').value=pf?pf.name:'';document.getElementById('food-amount').value=pf?pf.amount:'';document.getElementById('food-calories').value=pf?pf.calories:'';document.getElementById('food-protein').value=pf?pf.protein:'';document.getElementById('food-carbs').value=pf?pf.carbs:'';document.getElementById('food-fat').value=pf?pf.fat:'';document.getElementById('modal-food').classList.add('active');}
+function saveFood(){const nm=document.getElementById('food-name').value.trim();if(!nm)return;const it={name:nm,amount:parseInt(document.getElementById('food-amount').value)||0,calories:parseInt(document.getElementById('food-calories').value)||0,protein:parseFloat(document.getElementById('food-protein').value)||0,carbs:parseFloat(document.getElementById('food-carbs').value)||0,fat:parseFloat(document.getElementById('food-fat').value)||0};if(!D.foodLog[foodDate])D.foodLog[foodDate]=[];const was0=!D.foodLog[foodDate].length;D.foodLog[foodDate].push(it);sv();if(was0)addXP(15,'Food getrackt');closeModals();updFood();}
+
+// ═══ SCANNER ═══
+let camStream=null,camTimer=null;
+
+function openScan(){
+  const m=document.getElementById('modal-scanner');
+  document.getElementById('inp-barcode').value='';
+  document.getElementById('inp-product').value='';
+  document.getElementById('scan-msg').style.display='none';
+  document.getElementById('scan-results').style.display='none';
+  document.getElementById('scan-found').style.display='none';
+  scanProd=null;
+  m.classList.add('active');
+  startCam();
+}
+
+async function startCam(){
+  const v=document.getElementById('scan-video'),st=document.getElementById('cam-status'),box=document.getElementById('cam-box');
+  try{
+    camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}}});
+    v.srcObject=camStream;
+    if('BarcodeDetector' in window){
+      st.textContent='Auto-Scan aktiv — Barcode hinhalten...';st.style.color='#00d4ff';
+      const det=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128']});
+      camTimer=setInterval(async()=>{if(v.readyState<2)return;try{const bc=await det.detect(v);if(bc.length>0){clearInterval(camTimer);camTimer=null;const code=bc[0].rawValue;document.getElementById('inp-barcode').value=code;st.textContent='✓ Erkannt: '+code;st.style.color='#00e676';if(navigator.vibrate)navigator.vibrate(100);await doBarcode(code);}}catch(e){}},300);
+    } else {st.textContent='Kamera aktiv — Barcode unten eingeben';st.style.color='#ffab40';}
+  }catch(e){box.style.display='none';}
+}
+
+function closeScan(){
+  document.getElementById('modal-scanner').classList.remove('active');
+  if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
+  if(camTimer){clearInterval(camTimer);camTimer=null;}
+  document.getElementById('cam-box').style.display='';
+}
+
+function showMsg(t,err){const el=document.getElementById('scan-msg');el.textContent=t;el.style.display='block';el.style.color=err?'#ff4466':'#8b8aa0';}
+
+function showProd(p){
+  scanProd=p;
+  document.getElementById('scan-found').style.display='block';
+  document.getElementById('scan-product').innerHTML=`<div style="font-weight:600;margin-bottom:8px">${p.name}</div><div style="font-size:12px;color:#8b8aa0">Pro 100g:</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px"><div><div style="font-weight:700;color:#00d4ff">${p.calories}</div><div style="font-size:11px;color:#8b8aa0">kcal</div></div><div><div style="font-weight:700">${p.protein}g</div><div style="font-size:11px;color:#8b8aa0">Protein</div></div><div><div style="font-weight:700">${p.carbs}g</div><div style="font-size:11px;color:#8b8aa0">Carbs</div></div><div><div style="font-weight:700">${p.fat}g</div><div style="font-size:11px;color:#8b8aa0">Fett</div></div></div>`;
+  document.getElementById('scan-found').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+async function doBarcode(code){
+  document.getElementById('scan-found').style.display='none';
+  document.getElementById('scan-results').style.display='none';
+  showMsg('Lade '+code+'...',false);
+  try{
+    const r=await fetch('https://world.openfoodfacts.org/api/v2/product/'+code+'.json');
+    const d=await r.json();
+    if(d.status===1&&d.product){const p=d.product,n=p.nutriments||{};showMsg('Gefunden:',false);showProd({name:p.product_name_de||p.product_name||'Unbekannt',amount:100,calories:Math.round(n['energy-kcal_100g']||n['energy-kcal']||0),protein:Math.round((n.proteins_100g||0)*10)/10,carbs:Math.round((n.carbohydrates_100g||0)*10)/10,fat:Math.round((n.fat_100g||0)*10)/10});}
+    else showMsg('Nicht gefunden für '+code+'. Versuch Namenssuche.',true);
+  }catch(e){showMsg('Netzwerkfehler — Internet nötig.',true);}
+}
+
+async function doNameSearch(q){
+  if(!q||q.length<2)return;
+  document.getElementById('scan-found').style.display='none';
+  document.getElementById('scan-results').style.display='none';
+  showMsg('Suche "'+q+'"...',false);
+  try{
+    const r=await fetch('https://world.openfoodfacts.org/cgi/search.pl?search_terms='+encodeURIComponent(q)+'&search_simple=1&action=process&json=1&page_size=8&fields=product_name,product_name_de,nutriments,brands');
+    const d=await r.json();
+    const ps=(d.products||[]).filter(p=>p.product_name||p.product_name_de);
+    if(!ps.length){showMsg('Nichts gefunden für "'+q+'". Andere Begriffe probieren.',true);return;}
+    showMsg(ps.length+' Ergebnisse — antippen zum Auswählen:',false);
+    const sl=document.getElementById('scan-results');
+    sl.style.display='block';
+    sl._data=ps;
+    sl.innerHTML=ps.map((p,i)=>{const n=p.nutriments||{},nm=p.product_name_de||p.product_name||'?',br=p.brands||'',kc=Math.round(n['energy-kcal_100g']||n['energy-kcal']||0);return`<div data-ri="${i}" style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#1a1e35;border:1px solid #2a2f4a;border-radius:8px;margin-bottom:6px;cursor:pointer"><div style="min-width:0;flex:1"><div style="font-weight:500;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${nm}</div>${br?`<div style="font-size:11px;color:#5c5b72">${br}</div>`:''}</div><div style="font-weight:700;font-size:14px;color:#ffab40;margin-left:12px;white-space:nowrap">${kc} kcal</div></div>`;}).join('');
+  }catch(e){showMsg('Netzwerkfehler.',true);}
+}
+
+function pickResult(i){
+  const sl=document.getElementById('scan-results'),ps=sl._data;if(!ps||!ps[i])return;
+  const p=ps[i],n=p.nutriments||{};
+  sl.style.display='none';
+  showMsg('Ausgewählt:',false);
+  showProd({name:p.product_name_de||p.product_name||'?',amount:100,calories:Math.round(n['energy-kcal_100g']||n['energy-kcal']||0),protein:Math.round((n.proteins_100g||0)*10)/10,carbs:Math.round((n.carbohydrates_100g||0)*10)/10,fat:Math.round((n.fat_100g||0)*10)/10});
+}
+
+function useScanned(){if(!scanProd)return;closeScan();openFood(scanProd);}
+
+// PROFILE
+function openProf(){document.getElementById('profile-name').value=D.profile.name;document.getElementById('profile-weight').value=D.profile.bodyWeight||'';document.getElementById('modal-profile').classList.add('active');}
+function saveProf(){D.profile.name=document.getElementById('profile-name').value.trim();D.profile.bodyWeight=parseFloat(document.getElementById('profile-weight').value)||0;sv();closeModals();}
+
+function exportCSV(){let csv='Typ,Datum,Details,XP\n';D.workouts.forEach(w=>{const ex=w.exercises.map(e=>`${e.name}: ${e.sets.map(s=>`${s.weight}kg×${s.reps}`).join(', ')}`).join(' | ');csv+=`Workout,"${w.date}","${(w.notes||'')} ${ex}",${w.xpEarned||0}\n`;});D.runs.forEach(r=>{csv+=`Lauf,"${r.date}","${r.distance}km in ${r.duration}min${r.notes?' - '+r.notes:''}",${r.xpEarned||0}\n`;});Object.entries(D.foodLog).forEach(([dt,items])=>{items.forEach(it=>{csv+=`Food,"${dt}","${it.name} ${it.amount}g: ${it.calories}kcal P${it.protein}g C${it.carbs}g F${it.fat}g",0\n`;});});const b=new Blob([csv],{type:'text/csv'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=`grindrank_${new Date().toISOString().slice(0,10)}.csv`;a.click();URL.revokeObjectURL(u);}
+function importCSV(f){const r=new FileReader();r.onload=e=>{try{e.target.result.split('\n').slice(1).forEach(l=>{if(!l.trim())return;const m=l.match(/^(\w+),"([^"]+)","([^"]+)",(\d+)/);if(!m)return;const[,tp,dt,det,xp]=m;if(tp==='Workout')D.workouts.push({id:gid(),date:dt,notes:det,exercises:[],xpEarned:+xp||0});else if(tp==='Lauf'){const mm=det.match(/([\d.]+)km in (\d+)min/);if(mm)D.runs.push({id:gid(),date:dt,distance:+mm[1],duration:+mm[2],notes:'',xpEarned:+xp||0});}});sv();updAll();alert('Import OK!');}catch(e){alert('Import fehlgeschlagen.');}};r.readAsText(f);}
+
+function showRankUp(r){const o=document.getElementById('rankup-overlay');document.getElementById('rankup-badge').textContent=r.icon;document.getElementById('rankup-badge').style.borderColor=r.color;document.getElementById('rankup-badge').style.boxShadow=`0 0 60px ${r.color}60`;const n=document.getElementById('rankup-new');n.textContent=r.name;n.style.color=r.color;o.classList.add('active');}
+
+function switchView(v){document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));document.getElementById('view-'+v).classList.add('active');document.querySelector(`.nav-item[data-view="${v}"]`).classList.add('active');if(v==='gym')updGym();if(v==='run')updRun();if(v==='food')updFood();window.scrollTo(0,0);}
+function closeModals(){document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('active'));closeScan();}
+function updAll(){updDash();updGym();updRun();updFood();}
+
+// EVENTS
+document.addEventListener('click',e=>{
+  const a=e.target.closest('[data-action]');
+  if(a){
+    const act=a.dataset.action;
+    if(act==='open-profile')openProf();
+    else if(act==='new-workout')openWorkout();
+    else if(act==='new-run')openRun();
+    else if(act==='add-food')openFood();
+    else if(act==='scan-food')openScan();
+    else if(act==='add-exercise')addExBlock();
+    else if(act==='add-set')addSet(a.dataset.id);
+    else if(act==='rm-ex'){const b=a.closest('.exercise-block');if(b)b.remove();}
+    else if(act==='rm-set'){const tr=a.closest('tr');if(tr){const tb=tr.parentElement;tr.remove();tb.querySelectorAll('tr').forEach((r,i)=>{r.querySelector('.set-num').textContent=i+1;});}}
+    else if(act==='save-workout')saveWorkout();
+    else if(act==='save-run')saveRun();
+    else if(act==='save-food')saveFood();
+    else if(act==='save-profile')saveProf();
+    else if(act==='export-csv')exportCSV();
+    else if(act==='reset-data'){if(confirm('Alle Daten löschen?')){D=JSON.parse(JSON.stringify(DDEF));sv();updAll();closeModals();}}
+    else if(act==='close-modal')closeModals();
+    else if(act==='close-scanner')closeScan();
+    else if(act==='close-rankup')document.getElementById('rankup-overlay').classList.remove('active');
+    else if(act==='next-tip'){tipIdx=(tipIdx+1)%TIPS.length;document.getElementById('tip-text').textContent=TIPS[tipIdx];}
+    else if(act==='food-prev-day'){const d=new Date(foodDate);d.setDate(d.getDate()-1);foodDate=d.toISOString().slice(0,10);updFood();}
+    else if(act==='food-next-day'){const d=new Date(foodDate);d.setDate(d.getDate()+1);foodDate=d.toISOString().slice(0,10);updFood();}
+    else if(act==='do-barcode-search'){const v=document.getElementById('inp-barcode').value.trim();if(v)doBarcode(v);}
+    else if(act==='do-name-search'){const v=document.getElementById('inp-product').value.trim();if(v)doNameSearch(v);}
+    else if(act==='use-scanned')useScanned();
+    else if(act==='del-food'){const dt=a.dataset.date,idx=+a.dataset.idx;if(D.foodLog[dt]){D.foodLog[dt].splice(idx,1);if(!D.foodLog[dt].length)delete D.foodLog[dt];sv();updFood();}}
   }
-  return table;
-}
-
-const RANK_TABLE = buildRankTable();
-
-function getRankForXP(xp) {
-  let rank = RANK_TABLE[0];
-  for (let i = RANK_TABLE.length - 1; i >= 0; i--) {
-    if (xp >= RANK_TABLE[i].xpStart) { rank = RANK_TABLE[i]; break; }
-  }
-  const idx = RANK_TABLE.indexOf(rank);
-  const next = RANK_TABLE[idx + 1] || null;
-  const xpInRank = xp - rank.xpStart;
-  const xpNeeded = next ? next.xpStart - rank.xpStart : 0;
-  return { ...rank, idx, next, xpInRank, xpNeeded, progress: xpNeeded > 0 ? xpInRank / xpNeeded : 1 };
-}
-
-// ── RUNNING TIPS ──
-const TIPS = [
-  "Starte mit dem Couch-to-5K-Prinzip: Wechsel zwischen 1 Min Laufen und 1 Min Gehen. Steigere dich jede Woche.",
-  "Lauf langsam genug, dass du dich noch unterhalten könntest. Das baut deine Ausdauer-Basis auf.",
-  "Investiere in gute Laufschuhe — das ist das wichtigste Equipment für Anfänger.",
-  "Folge der 10%-Regel: Steigere dein wöchentliches Volumen nie um mehr als 10%.",
-  "Wärm dich 5 Min mit zügigem Gehen auf, bevor du losläufst. Dein Körper wird es dir danken.",
-  "Lauf nicht jeden Tag. 3x pro Woche reicht am Anfang. Dein Körper braucht Erholungstage.",
-  "Achte auf deinen Atem: Durch die Nase ein, durch den Mund aus. 3:2 Rhythmus (3 Schritte ein, 2 aus).",
-  "Musik oder Podcasts können Wunder wirken für die Motivation. Erstelle eine Lauf-Playlist.",
-  "Laufe morgens — es gibt dir Energie für den ganzen Tag und die Luft ist frischer.",
-  "Setze dir ein Ziel: z.B. 5 km in 30 Min. Konkrete Ziele motivieren mehr als vage Vorsätze.",
-  "Trinke genug Wasser — mindestens 500ml 1-2 Stunden vor dem Lauf.",
-  "Dehne dich NACH dem Lauf, nicht davor. Dynamisches Aufwärmen vor dem Lauf ist besser.",
-  "Vergleiche dich nur mit dir selbst. Jeder Lauf macht dich besser als gestern.",
-  "Bei Regen laufen fühlt sich erst komisch an, aber danach unglaublich gut. Trau dich.",
-  "Intervalltraining 1x pro Woche: 30s Sprint, 90s Gehen, 8 Runden. Verbessert deine Pace enorm.",
-  "Iss 1-2 Stunden vor dem Lauf leicht — Banane, Toast, Haferflocken. Nicht auf leeren Magen.",
-  "Finde eine Laufstrecke, die dir Spaß macht — Park, Strand, Wald. Die Umgebung macht den Unterschied.",
-  "Tracke deine Läufe. Fortschritte zu sehen ist der beste Motivator.",
-];
-
-// ── DATA STORE (direkt localStorage) ──
-const STORAGE_KEY = 'grindrank_data';
-const DEFAULT_DATA = {
-  profile: { name: '', bodyWeight: 0, joinDate: new Date().toISOString().slice(0, 10) },
-  workouts: [],
-  runs: [],
-  foodLog: {},
-  xp: 0,
-  xpHistory: [],
-};
-
-function loadData() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch (e) { console.warn('Daten laden fehlgeschlagen:', e); }
-  return JSON.parse(JSON.stringify(DEFAULT_DATA));
-}
-
-let DATA = loadData();
-let currentTipIdx = 0;
-let foodDate = new Date().toISOString().slice(0, 10);
-let scannedProduct = null;
-
-function saveData() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA)); }
-  catch (e) { console.warn('Speichern fehlgeschlagen:', e); }
-}
-
-function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
-
-function formatDate(d) {
-  const today = new Date().toISOString().slice(0, 10);
-  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-  if (d === today) return 'Heute';
-  if (d === yesterday) return 'Gestern';
-  const parts = d.split('-');
-  return `${parts[2]}.${parts[1]}.${parts[0]}`;
-}
-
-function addXP(amount, reason) {
-  const oldRank = getRankForXP(DATA.xp);
-  DATA.xp += amount;
-  DATA.xpHistory.push({ date: new Date().toISOString(), amount, reason });
-  const newRank = getRankForXP(DATA.xp);
-  saveData();
-  updateDashboard();
-  if (newRank.idx > oldRank.idx) showRankUp(newRank);
-}
-
-// ── STREAK ──
-function calculateStreak() {
-  const allDates = new Set();
-  DATA.workouts.forEach(w => allDates.add(w.date));
-  DATA.runs.forEach(r => allDates.add(r.date));
-  if (allDates.size === 0) return 0;
-  let streak = 0;
-  let d = new Date(); d.setHours(0, 0, 0, 0);
-  const todayStr = d.toISOString().slice(0, 10);
-  if (!allDates.has(todayStr)) d.setDate(d.getDate() - 1);
-  while (true) {
-    const ds = d.toISOString().slice(0, 10);
-    if (allDates.has(ds)) { streak++; d.setDate(d.getDate() - 1); }
-    else break;
-  }
-  return streak;
-}
-
-// ── UPDATE UI ──
-function updateDashboard() {
-  const rank = getRankForXP(DATA.xp);
-  document.getElementById('rank-emblem').style.borderColor = rank.color;
-  document.getElementById('rank-emblem').style.boxShadow = `0 0 30px ${rank.color}40`;
-  document.querySelector('.rank-icon').textContent = rank.icon;
-  document.getElementById('rank-label').textContent = rank.name;
-  document.getElementById('rank-label').style.color = rank.color;
-  const subtitles = {
-    Iron: 'Dein Weg beginnt', Bronze: 'Aufsteigend', Silver: 'Solide Basis',
-    Gold: 'Respektabel', Platinum: 'Elite-Niveau', Emerald: 'Unaufhaltsam',
-    Diamond: 'Top-Performer', Master: 'Meisterklasse', Grandmaster: 'Legende',
-    Challenger: 'Unerreichbar'
-  };
-  document.getElementById('rank-subtitle').textContent = subtitles[rank.rankName] || '';
-  document.getElementById('xp-current').textContent = rank.xpInRank;
-  document.getElementById('xp-target').textContent = rank.xpNeeded || '∞';
-  document.getElementById('xp-bar-fill').style.width = `${Math.min(rank.progress * 100, 100)}%`;
-  document.getElementById('xp-bar-fill').style.background =
-    `linear-gradient(90deg, ${rank.color}, ${rank.next ? rank.next.color : rank.color})`;
-  document.getElementById('xp-next').textContent = rank.next
-    ? `Nächster Rang: ${rank.next.name}` : 'Höchster Rang erreicht!';
-  document.getElementById('stat-workouts').textContent = DATA.workouts.length;
-  document.getElementById('stat-runs').textContent = DATA.runs.length;
-  document.getElementById('stat-streak').textContent = calculateStreak();
-  document.getElementById('stat-total-xp').textContent = DATA.xp;
-  renderActivityFeed();
-}
-
-function renderActivityFeed() {
-  const container = document.getElementById('activity-list');
-  const items = [];
-  DATA.workouts.slice(-10).forEach(w => {
-    items.push({ type: 'gym', icon: '🏋️', title: w.notes || `${w.exercises.length} Übungen`,
-      date: w.date, xp: w.xpEarned || 0, ts: new Date(w.date).getTime() });
-  });
-  DATA.runs.slice(-10).forEach(r => {
-    items.push({ type: 'run', icon: '🏃', title: `${r.distance} km in ${r.duration} min`,
-      date: r.date, xp: r.xpEarned || 0, ts: new Date(r.date).getTime() });
-  });
-  items.sort((a, b) => b.ts - a.ts);
-  const recent = items.slice(0, 8);
-  if (recent.length === 0) {
-    container.innerHTML = `<div class="empty-state"><p>Noch keine Aktivität — starte dein erstes Workout.</p></div>`;
-    return;
-  }
-  container.innerHTML = recent.map(item => `
-    <div class="activity-item">
-      <div class="activity-icon ${item.type}">${item.icon}</div>
-      <div class="activity-info">
-        <div class="activity-title">${item.title}</div>
-        <div class="activity-meta">${formatDate(item.date)}</div>
-      </div>
-      <div class="activity-xp">+${item.xp} XP</div>
-    </div>`).join('');
-}
-
-// ── GYM VIEW ──
-function updateGymView() { renderPRs(); renderWorkoutHistory(); }
-
-function renderPRs() {
-  const prs = {};
-  DATA.workouts.forEach(w => {
-    w.exercises.forEach(ex => {
-      const name = ex.name.toLowerCase().trim();
-      if (!name) return;
-      ex.sets.forEach(s => {
-        const est1rm = s.weight * (1 + s.reps / 30);
-        if (!prs[name] || est1rm > prs[name].est1rm)
-          prs[name] = { name: ex.name, weight: s.weight, reps: s.reps, est1rm, date: w.date };
-      });
-    });
-  });
-  const container = document.getElementById('pr-list');
-  const entries = Object.values(prs).sort((a, b) => b.est1rm - a.est1rm);
-  if (entries.length === 0) {
-    container.innerHTML = `<div class="empty-state"><p>Logge dein erstes Workout, um PRs zu tracken.</p></div>`;
-    return;
-  }
-  container.innerHTML = entries.map(pr => `
-    <div class="pr-item">
-      <div class="pr-name">${pr.name}</div>
-      <div class="pr-value">${pr.weight}kg × ${pr.reps}</div>
-    </div>`).join('');
-}
-
-function renderWorkoutHistory() {
-  const container = document.getElementById('workout-history');
-  const workouts = [...DATA.workouts].reverse().slice(0, 20);
-  if (workouts.length === 0) {
-    container.innerHTML = `<div class="empty-state"><p>Noch keine Workouts.</p></div>`;
-    return;
-  }
-  container.innerHTML = workouts.map(w => `
-    <div class="history-item">
-      <div class="history-header">
-        <span class="history-date">${formatDate(w.date)}</span>
-        <span class="history-xp">+${w.xpEarned || 0} XP</span>
-      </div>
-      ${w.notes ? `<div class="history-title">${w.notes}</div>` : ''}
-      <div class="history-exercises">
-        ${w.exercises.map(ex => `<span class="exercise-tag">${ex.name} (${ex.sets.length}×)</span>`).join('')}
-      </div>
-    </div>`).join('');
-}
-
-// ── WORKOUT MODAL ──
-function openWorkoutModal() {
-  document.getElementById('workout-date').value = new Date().toISOString().slice(0, 10);
-  document.getElementById('workout-notes').value = '';
-  document.getElementById('exercises-container').innerHTML = '';
-  addExerciseBlock();
-  document.getElementById('modal-workout').classList.add('active');
-}
-
-function addExerciseBlock() {
-  const container = document.getElementById('exercises-container');
-  const id = genId();
-  const html = `
-    <div class="exercise-block" data-exercise-id="${id}">
-      <div class="exercise-block-header">
-        <input type="text" placeholder="Übungsname (z.B. Bench Press)" class="exercise-name-input" list="exercise-suggestions">
-        <button class="exercise-remove" data-action="remove-exercise" data-id="${id}">&times;</button>
-      </div>
-      <table class="sets-table">
-        <thead><tr><th>Set</th><th>kg</th><th>Reps</th><th></th></tr></thead>
-        <tbody class="sets-body">
-          <tr><td class="set-num">1</td>
-            <td><input type="number" class="set-weight" step="0.5" min="0" placeholder="0"></td>
-            <td><input type="number" class="set-reps" step="1" min="0" placeholder="0"></td>
-            <td><button class="set-remove" data-action="remove-set">&times;</button></td></tr>
-        </tbody>
-      </table>
-      <button class="add-set-btn" data-action="add-set" data-id="${id}">+ Set</button>
-    </div>`;
-  container.insertAdjacentHTML('beforeend', html);
-  if (!document.getElementById('exercise-suggestions')) {
-    const dl = document.createElement('datalist'); dl.id = 'exercise-suggestions';
-    getExerciseSuggestions().forEach(s => { const o = document.createElement('option'); o.value = s; dl.appendChild(o); });
-    document.body.appendChild(dl);
-  }
-}
-
-function getExerciseSuggestions() {
-  const names = new Set();
-  DATA.workouts.forEach(w => w.exercises.forEach(ex => { if (ex.name) names.add(ex.name); }));
-  ['Bench Press','Squat','Deadlift','Overhead Press','Barbell Row','Pull-Ups','Lat Pulldown',
-   'Incline Bench','Leg Press','Romanian Deadlift','Cable Fly','Bicep Curl','Tricep Extension',
-   'Lateral Raise','Face Pull','Leg Curl','Leg Extension','Calf Raise','Dips','Chin-Ups']
-    .forEach(d => names.add(d));
-  return [...names].sort();
-}
-
-function addSetToExercise(exerciseId) {
-  const block = document.querySelector(`[data-exercise-id="${exerciseId}"]`);
-  if (!block) return;
-  const tbody = block.querySelector('.sets-body');
-  const num = tbody.children.length + 1;
-  const tr = document.createElement('tr');
-  tr.innerHTML = `<td class="set-num">${num}</td>
-    <td><input type="number" class="set-weight" step="0.5" min="0" placeholder="0"></td>
-    <td><input type="number" class="set-reps" step="1" min="0" placeholder="0"></td>
-    <td><button class="set-remove" data-action="remove-set">&times;</button></td>`;
-  tbody.appendChild(tr);
-}
-
-function saveWorkout() {
-  const date = document.getElementById('workout-date').value;
-  const notes = document.getElementById('workout-notes').value.trim();
-  const blocks = document.querySelectorAll('.exercise-block');
-  const exercises = [];
-  blocks.forEach(block => {
-    const name = block.querySelector('.exercise-name-input').value.trim();
-    if (!name) return;
-    const rows = block.querySelectorAll('.sets-body tr');
-    const sets = [];
-    rows.forEach(row => {
-      const w = parseFloat(row.querySelector('.set-weight').value) || 0;
-      const r = parseInt(row.querySelector('.set-reps').value) || 0;
-      if (w > 0 || r > 0) sets.push({ weight: w, reps: r });
-    });
-    if (sets.length > 0) exercises.push({ name, sets });
-  });
-  if (exercises.length === 0) return;
-
-  let prCount = 0;
-  const oldPRs = {};
-  DATA.workouts.forEach(w => {
-    w.exercises.forEach(ex => {
-      const n = ex.name.toLowerCase().trim();
-      ex.sets.forEach(s => { const e = s.weight * (1 + s.reps / 30); if (!oldPRs[n] || e > oldPRs[n]) oldPRs[n] = e; });
-    });
-  });
-  exercises.forEach(ex => {
-    const n = ex.name.toLowerCase().trim();
-    ex.sets.forEach(s => { const e = s.weight * (1 + s.reps / 30); if (!oldPRs[n] || e > oldPRs[n]) { prCount++; oldPRs[n] = e; } });
-  });
-
-  const totalSets = exercises.reduce((sum, ex) => sum + ex.sets.length, 0);
-  const xp = 30 + totalSets * 3 + prCount * 75;
-  DATA.workouts.push({ id: genId(), date, notes, exercises, xpEarned: xp });
-  saveData();
-  addXP(xp, `Workout: ${notes || exercises.map(e => e.name).join(', ')}`);
-  closeAllModals();
-  updateGymView();
-}
-
-// ── RUN VIEW ──
-function updateRunView() {
-  const runs = DATA.runs;
-  const totalKm = runs.reduce((s, r) => s + r.distance, 0);
-  const longestRun = runs.length > 0 ? Math.max(...runs.map(r => r.distance)) : 0;
-  let bestPace = null;
-  runs.forEach(r => { if (r.distance > 0) { const p = r.duration / r.distance; if (!bestPace || p < bestPace) bestPace = p; } });
-  document.getElementById('run-total-km').textContent = totalKm.toFixed(1);
-  document.getElementById('run-total-runs').textContent = runs.length;
-  document.getElementById('run-best-pace').textContent = bestPace
-    ? `${Math.floor(bestPace)}'${String(Math.round((bestPace % 1) * 60)).padStart(2, '0')}"` : '—';
-  document.getElementById('run-longest').textContent = longestRun.toFixed(1);
-  renderRunHistory();
-}
-
-function renderRunHistory() {
-  const container = document.getElementById('run-history');
-  const runs = [...DATA.runs].reverse().slice(0, 20);
-  if (runs.length === 0) { container.innerHTML = `<div class="empty-state"><p>Noch keine Läufe.</p></div>`; return; }
-  container.innerHTML = runs.map(r => {
-    const pace = r.distance > 0 ? r.duration / r.distance : 0;
-    const paceStr = pace > 0 ? `${Math.floor(pace)}'${String(Math.round((pace % 1) * 60)).padStart(2, '0')}" /km` : '';
-    return `<div class="history-item">
-      <div class="history-header"><span class="history-date">${formatDate(r.date)}</span><span class="history-xp">+${r.xpEarned || 0} XP</span></div>
-      <div class="history-title">${r.distance} km in ${r.duration} min</div>
-      <div class="history-detail">${paceStr}${r.notes ? ' · ' + r.notes : ''}</div>
-    </div>`;
-  }).join('');
-}
-
-function openRunModal() {
-  document.getElementById('run-date').value = new Date().toISOString().slice(0, 10);
-  document.getElementById('run-distance').value = '';
-  document.getElementById('run-duration').value = '';
-  document.getElementById('run-notes').value = '';
-  document.getElementById('modal-run').classList.add('active');
-}
-
-function saveRun() {
-  const date = document.getElementById('run-date').value;
-  const distance = parseFloat(document.getElementById('run-distance').value) || 0;
-  const duration = parseInt(document.getElementById('run-duration').value) || 0;
-  const notes = document.getElementById('run-notes').value.trim();
-  if (distance <= 0 && duration <= 0) return;
-  const xp = 25 + Math.round(distance * 5);
-  DATA.runs.push({ id: genId(), date, distance, duration, notes, xpEarned: xp });
-  saveData();
-  addXP(xp, `Lauf: ${distance} km`);
-  closeAllModals();
-  updateRunView();
-}
-
-function showNextTip() {
-  currentTipIdx = (currentTipIdx + 1) % TIPS.length;
-  document.getElementById('tip-text').textContent = TIPS[currentTipIdx];
-}
-
-// ── FOOD VIEW ──
-function updateFoodView() {
-  document.getElementById('food-date').textContent = formatDate(foodDate);
-  const items = DATA.foodLog[foodDate] || [];
-  let cal = 0, pro = 0, carbs = 0, fat = 0;
-  items.forEach(i => { cal += i.calories; pro += i.protein; carbs += i.carbs; fat += i.fat; });
-  document.getElementById('macro-calories').textContent = Math.round(cal);
-  document.getElementById('macro-protein').textContent = Math.round(pro) + 'g';
-  document.getElementById('macro-carbs').textContent = Math.round(carbs) + 'g';
-  document.getElementById('macro-fat').textContent = Math.round(fat) + 'g';
-  const container = document.getElementById('food-log');
-  if (items.length === 0) {
-    container.innerHTML = `<div class="empty-state"><p>Noch keine Lebensmittel für ${formatDate(foodDate)}.</p></div>`;
-    return;
-  }
-  container.innerHTML = items.map((item, idx) => `
-    <div class="food-item">
-      <div class="food-item-info">
-        <div class="food-item-name">${item.name}${item.amount ? ` (${item.amount}g)` : ''}</div>
-        <div class="food-item-macros">P: ${item.protein}g · C: ${item.carbs}g · F: ${item.fat}g</div>
-      </div>
-      <div class="food-item-cal">${item.calories} kcal</div>
-      <button class="food-item-delete" data-action="delete-food" data-date="${foodDate}" data-idx="${idx}">&times;</button>
-    </div>`).join('');
-}
-
-function openFoodModal(prefill) {
-  document.getElementById('food-name').value = prefill ? prefill.name : '';
-  document.getElementById('food-amount').value = prefill ? prefill.amount : '';
-  document.getElementById('food-calories').value = prefill ? prefill.calories : '';
-  document.getElementById('food-protein').value = prefill ? prefill.protein : '';
-  document.getElementById('food-carbs').value = prefill ? prefill.carbs : '';
-  document.getElementById('food-fat').value = prefill ? prefill.fat : '';
-  document.getElementById('modal-food').classList.add('active');
-}
-
-function saveFood() {
-  const name = document.getElementById('food-name').value.trim();
-  if (!name) return;
-  const item = {
-    name,
-    amount: parseInt(document.getElementById('food-amount').value) || 0,
-    calories: parseInt(document.getElementById('food-calories').value) || 0,
-    protein: parseFloat(document.getElementById('food-protein').value) || 0,
-    carbs: parseFloat(document.getElementById('food-carbs').value) || 0,
-    fat: parseFloat(document.getElementById('food-fat').value) || 0,
-  };
-  if (!DATA.foodLog[foodDate]) DATA.foodLog[foodDate] = [];
-  const wasEmpty = DATA.foodLog[foodDate].length === 0;
-  DATA.foodLog[foodDate].push(item);
-  saveData();
-  if (wasEmpty) addXP(15, `Ernährung getrackt: ${formatDate(foodDate)}`);
-  closeAllModals();
-  updateFoodView();
-}
-
-function deleteFood(date, idx) {
-  if (DATA.foodLog[date]) {
-    DATA.foodLog[date].splice(idx, 1);
-    if (DATA.foodLog[date].length === 0) delete DATA.foodLog[date];
-    saveData(); updateFoodView();
-  }
-}
-
-// ── BARCODE SCANNER (Auto-Scan + Namenssuche) ──
-let scannerStream = null;
-let scannerInterval = null;
-
-async function openScanner() {
-  const modal = document.getElementById('modal-scanner');
-  const video = document.getElementById('scanner-video');
-  const status = document.getElementById('scanner-status');
-  const hint = document.getElementById('scanner-hint');
-  const result = document.getElementById('scanner-result');
-  const searchList = document.getElementById('search-results-list');
-
-  result.style.display = 'none';
-  hint.style.display = 'none';
-  searchList.style.display = 'none';
-  scannedProduct = null;
-  document.getElementById('manual-barcode').value = '';
-  document.getElementById('product-name-search').value = '';
-  status.textContent = 'Kamera wird gestartet...';
-
-  modal.classList.add('active');
-
-  // Kamera sofort starten
-  try {
-    scannerStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
-    });
-    video.srcObject = scannerStream;
-
-    // Auto-Scan mit BarcodeDetector
-    if ('BarcodeDetector' in window) {
-      status.textContent = 'Auto-Scan aktiv — Barcode in den Rahmen halten...';
-      status.style.color = 'var(--color-accent)';
-      const detector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39'] });
-      scannerInterval = setInterval(async () => {
-        if (video.readyState < 2) return;
-        try {
-          const barcodes = await detector.detect(video);
-          if (barcodes.length > 0) {
-            clearInterval(scannerInterval);
-            scannerInterval = null;
-            const code = barcodes[0].rawValue;
-            document.getElementById('manual-barcode').value = code;
-            status.textContent = `✓ Barcode erkannt: ${code}`;
-            status.style.color = 'var(--color-success)';
-            // Vibrations-Feedback wenn verfügbar
-            if (navigator.vibrate) navigator.vibrate(100);
-            await lookupBarcode(code);
-          }
-        } catch (e) {}
-      }, 300);
-    } else {
-      status.textContent = 'Kamera aktiv — Auto-Scan nicht unterstützt, Barcode unten eingeben';
-      status.style.color = 'var(--color-warning)';
-    }
-  } catch (e) {
-    // Kamera nicht verfügbar
-    document.getElementById('scanner-cam-area').style.display = 'none';
-  }
-}
-
-function showHint(text, isError) {
-  const hint = document.getElementById('scanner-hint');
-  hint.textContent = text;
-  hint.style.display = 'block';
-  hint.style.color = isError ? 'var(--color-danger)' : 'var(--color-text-muted)';
-}
-
-function showProductResult(product) {
-  scannedProduct = product;
-  const result = document.getElementById('scanner-result');
-  result.style.display = 'block';
-  document.getElementById('scanner-product').innerHTML = `
-    <div style="font-weight:600;margin-bottom:var(--space-2)">${product.name}</div>
-    <div style="font-size:var(--text-xs);color:var(--color-text-muted)">Pro 100g:</div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-2);margin-top:var(--space-2)">
-      <div><div style="font-weight:700;color:var(--color-accent)">${product.calories}</div><div style="font-size:var(--text-xs);color:var(--color-text-muted)">kcal</div></div>
-      <div><div style="font-weight:700">${product.protein}g</div><div style="font-size:var(--text-xs);color:var(--color-text-muted)">Protein</div></div>
-      <div><div style="font-weight:700">${product.carbs}g</div><div style="font-size:var(--text-xs);color:var(--color-text-muted)">Carbs</div></div>
-      <div><div style="font-weight:700">${product.fat}g</div><div style="font-size:var(--text-xs);color:var(--color-text-muted)">Fett</div></div>
-    </div>`;
-  // Scroll zum Ergebnis
-  result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-}
-
-async function lookupBarcode(barcode) {
-  const result = document.getElementById('scanner-result');
-  showHint(`Lade Daten für ${barcode}...`, false);
-  result.style.display = 'none';
-
-  try {
-    const resp = await fetch(`https://world.openfoodfacts.org/api/v2/product/${barcode}.json`);
-    const data = await resp.json();
-    if (data.status === 1 && data.product) {
-      const p = data.product;
-      const n = p.nutriments || {};
-      const product = {
-        name: p.product_name_de || p.product_name || 'Unbekannt',
-        amount: 100,
-        calories: Math.round(n['energy-kcal_100g'] || n['energy-kcal'] || 0),
-        protein: Math.round((n.proteins_100g || 0) * 10) / 10,
-        carbs: Math.round((n.carbohydrates_100g || 0) * 10) / 10,
-        fat: Math.round((n.fat_100g || 0) * 10) / 10,
-      };
-      showHint('Produkt gefunden:', false);
-      showProductResult(product);
-    } else {
-      showHint(`Kein Produkt für Barcode ${barcode} gefunden. Versuch es per Namenssuche.`, true);
-    }
-  } catch (e) {
-    showHint('Netzwerkfehler — Internet nötig für Produktsuche.', true);
-  }
-}
-
-// ── PRODUKT-NAMENSSUCHE ──
-async function searchProductByName(query) {
-  if (!query || query.length < 2) return;
-  const searchList = document.getElementById('search-results-list');
-  showHint(`Suche nach "${query}"...`, false);
-  searchList.style.display = 'none';
-  document.getElementById('scanner-result').style.display = 'none';
-
-  try {
-    const resp = await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=8&fields=product_name,product_name_de,nutriments,brands,code`);
-    const data = await resp.json();
-    const products = (data.products || []).filter(p => p.product_name || p.product_name_de);
-
-    if (products.length === 0) {
-      showHint(`Keine Ergebnisse für "${query}". Versuch andere Begriffe oder gib es manuell ein.`, true);
-      return;
-    }
-
-    showHint(`${products.length} Ergebnisse:`, false);
-    searchList.style.display = 'block';
-    searchList.innerHTML = products.map((p, i) => {
-      const n = p.nutriments || {};
-      const name = p.product_name_de || p.product_name || 'Unbekannt';
-      const brand = p.brands || '';
-      const kcal = Math.round(n['energy-kcal_100g'] || n['energy-kcal'] || 0);
-      return `<div class="search-result-item" data-idx="${i}" style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-3);background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(--radius-md);margin-bottom:var(--space-2);cursor:pointer;transition:background 0.15s">
-        <div style="min-width:0;flex:1">
-          <div style="font-weight:500;font-size:var(--text-sm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</div>
-          ${brand ? `<div style="font-size:var(--text-xs);color:var(--color-text-faint)">${brand}</div>` : ''}
-        </div>
-        <div style="font-weight:700;font-size:var(--text-sm);color:var(--color-warning);margin-left:var(--space-3);white-space:nowrap">${kcal} kcal</div>
-      </div>`;
-    }).join('');
-
-    // Store products for selection
-    searchList._products = products;
-  } catch (e) {
-    showHint('Netzwerkfehler bei der Suche.', true);
-  }
-}
-
-function selectSearchResult(idx) {
-  const searchList = document.getElementById('search-results-list');
-  const products = searchList._products;
-  if (!products || !products[idx]) return;
-
-  const p = products[idx];
-  const n = p.nutriments || {};
-  const product = {
-    name: p.product_name_de || p.product_name || 'Unbekannt',
-    amount: 100,
-    calories: Math.round(n['energy-kcal_100g'] || n['energy-kcal'] || 0),
-    protein: Math.round((n.proteins_100g || 0) * 10) / 10,
-    carbs: Math.round((n.carbohydrates_100g || 0) * 10) / 10,
-    fat: Math.round((n.fat_100g || 0) * 10) / 10,
-  };
-  searchList.style.display = 'none';
-  showHint('Produkt ausgewählt:', false);
-  showProductResult(product);
-}
-
-function addScannedFood() {
-  if (!scannedProduct) return;
-  stopScanner();
-  closeAllModals();
-  openFoodModal(scannedProduct);
-}
-
-function stopScanner() {
-  if (scannerStream) { scannerStream.getTracks().forEach(t => t.stop()); scannerStream = null; }
-  if (scannerInterval) { clearInterval(scannerInterval); scannerInterval = null; }
-  // Kamera-Area zurücksetzen für nächstes Mal
-  const camArea = document.getElementById('scanner-cam-area');
-  if (camArea) camArea.style.display = '';
-}
-
-// ── PROFILE ──
-function openProfile() {
-  document.getElementById('profile-name').value = DATA.profile.name;
-  document.getElementById('profile-weight').value = DATA.profile.bodyWeight || '';
-  document.getElementById('modal-profile').classList.add('active');
-}
-
-function saveProfile() {
-  DATA.profile.name = document.getElementById('profile-name').value.trim();
-  DATA.profile.bodyWeight = parseFloat(document.getElementById('profile-weight').value) || 0;
-  saveData(); closeAllModals();
-}
-
-// ── CSV EXPORT/IMPORT ──
-function exportCSV() {
-  let csv = 'Typ,Datum,Details,XP\n';
-  DATA.workouts.forEach(w => {
-    const ex = w.exercises.map(e => `${e.name}: ${e.sets.map(s => `${s.weight}kg×${s.reps}`).join(', ')}`).join(' | ');
-    csv += `Workout,"${w.date}","${(w.notes || '')} ${ex}",${w.xpEarned || 0}\n`;
-  });
-  DATA.runs.forEach(r => {
-    csv += `Lauf,"${r.date}","${r.distance}km in ${r.duration}min${r.notes ? ' - ' + r.notes : ''}",${r.xpEarned || 0}\n`;
-  });
-  Object.entries(DATA.foodLog).forEach(([date, items]) => {
-    items.forEach(item => {
-      csv += `Food,"${date}","${item.name} ${item.amount}g: ${item.calories}kcal P${item.protein}g C${item.carbs}g F${item.fat}g",0\n`;
-    });
-  });
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = `grindrank_export_${new Date().toISOString().slice(0, 10)}.csv`;
-  a.click(); URL.revokeObjectURL(url);
-}
-
-function importCSV(file) {
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    try {
-      const lines = e.target.result.split('\n').slice(1);
-      lines.forEach(line => {
-        if (!line.trim()) return;
-        const match = line.match(/^(\w+),"([^"]+)","([^"]+)",(\d+)/);
-        if (!match) return;
-        const [, type, date, details, xp] = match;
-        if (type === 'Workout') {
-          DATA.workouts.push({ id: genId(), date, notes: details, exercises: [], xpEarned: parseInt(xp) || 0 });
-        } else if (type === 'Lauf') {
-          const m = details.match(/([\d.]+)km in (\d+)min/);
-          if (m) DATA.runs.push({ id: genId(), date, distance: parseFloat(m[1]), duration: parseInt(m[2]), notes: '', xpEarned: parseInt(xp) || 0 });
-        }
-      });
-      saveData(); updateAll(); alert('Import erfolgreich!');
-    } catch (err) { alert('Import fehlgeschlagen.'); }
-  };
-  reader.readAsText(file);
-}
-
-// ── RANK UP ──
-function showRankUp(rank) {
-  const overlay = document.getElementById('rankup-overlay');
-  document.getElementById('rankup-badge').textContent = rank.icon;
-  document.getElementById('rankup-badge').style.borderColor = rank.color;
-  document.getElementById('rankup-badge').style.boxShadow = `0 0 60px ${rank.color}60`;
-  document.getElementById('rankup-new').textContent = rank.name;
-  document.getElementById('rankup-new').style.color = rank.color;
-  overlay.classList.add('active');
-}
-
-// ── NAVIGATION ──
-function switchView(viewName) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById(`view-${viewName}`).classList.add('active');
-  document.querySelector(`.nav-item[data-view="${viewName}"]`).classList.add('active');
-  if (viewName === 'gym') updateGymView();
-  if (viewName === 'run') updateRunView();
-  if (viewName === 'food') updateFoodView();
-  window.scrollTo(0, 0);
-}
-
-function closeAllModals() {
-  document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
-  stopScanner();
-}
-
-function updateAll() { updateDashboard(); updateGymView(); updateRunView(); updateFoodView(); }
-
-// ── EVENT DELEGATION ──
-document.addEventListener('click', (e) => {
-  const action = e.target.closest('[data-action]');
-  if (!action) return;
-  const a = action.dataset.action;
-  switch (a) {
-    case 'open-profile': openProfile(); break;
-    case 'new-workout': openWorkoutModal(); break;
-    case 'new-run': openRunModal(); break;
-    case 'add-food': openFoodModal(); break;
-    case 'scan-food': openScanner(); break;
-    case 'add-exercise': addExerciseBlock(); break;
-    case 'add-set': addSetToExercise(action.dataset.id); break;
-    case 'remove-exercise': { const b = action.closest('.exercise-block'); if (b) b.remove(); break; }
-    case 'remove-set': {
-      const tr = action.closest('tr');
-      if (tr) { const tb = tr.parentElement; tr.remove();
-        tb.querySelectorAll('tr').forEach((r, i) => { r.querySelector('.set-num').textContent = i + 1; }); }
-      break;
-    }
-    case 'save-workout': saveWorkout(); break;
-    case 'save-run': saveRun(); break;
-    case 'save-food': saveFood(); break;
-    case 'save-profile': saveProfile(); break;
-    case 'export-csv': exportCSV(); break;
-    case 'reset-data': {
-      if (confirm('Alle Daten wirklich löschen?')) {
-        DATA = JSON.parse(JSON.stringify(DEFAULT_DATA)); saveData(); updateAll(); closeAllModals();
-      }
-      break;
-    }
-    case 'close-modal': closeAllModals(); break;
-    case 'close-rankup': document.getElementById('rankup-overlay').classList.remove('active'); break;
-    case 'next-tip': showNextTip(); break;
-    case 'food-prev-day': { const d = new Date(foodDate); d.setDate(d.getDate()-1); foodDate = d.toISOString().slice(0,10); updateFoodView(); break; }
-    case 'food-next-day': { const d = new Date(foodDate); d.setDate(d.getDate()+1); foodDate = d.toISOString().slice(0,10); updateFoodView(); break; }
-    case 'add-scanned-food': addScannedFood(); break;
-    case 'delete-food': deleteFood(action.dataset.date, parseInt(action.dataset.idx)); break;
-    case 'manual-barcode-search': {
-      const input = document.getElementById('manual-barcode');
-      if (input && input.value.trim()) lookupBarcode(input.value.trim());
-      break;
-    }
-    case 'search-product-name': {
-      const input = document.getElementById('product-name-search');
-      if (input && input.value.trim()) searchProductByName(input.value.trim());
-      break;
-    }
-  }
-
-  // Klick auf Suchergebnis-Item
-  const resultItem = e.target.closest('.search-result-item');
-  if (resultItem && resultItem.dataset.idx !== undefined) {
-    selectSearchResult(parseInt(resultItem.dataset.idx));
-  }
+  // Search result click
+  const ri=e.target.closest('[data-ri]');
+  if(ri)pickResult(+ri.dataset.ri);
 });
 
-document.querySelectorAll('.nav-item').forEach(btn => {
-  btn.addEventListener('click', () => switchView(btn.dataset.view));
-});
+document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view)));
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)closeModals();}));
+document.getElementById('import-csv').addEventListener('change',e=>{if(e.target.files[0])importCSV(e.target.files[0]);});
 
-document.querySelectorAll('.modal-overlay').forEach(overlay => {
-  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeAllModals(); });
-});
+// Enter keys
+document.getElementById('inp-barcode').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const v=e.target.value.trim();if(v)doBarcode(v);}});
+document.getElementById('inp-product').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const v=e.target.value.trim();if(v)doNameSearch(v);}});
 
-document.getElementById('import-csv').addEventListener('change', (e) => {
-  if (e.target.files[0]) importCSV(e.target.files[0]);
-});
-
-// Enter-Taste für Suchfelder
-document.getElementById('manual-barcode').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') { e.preventDefault(); const v = e.target.value.trim(); if (v) lookupBarcode(v); }
-});
-document.getElementById('product-name-search').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') { e.preventDefault(); const v = e.target.value.trim(); if (v) searchProductByName(v); }
-});
-
-// ── INIT ──
-updateAll();
-currentTipIdx = Math.floor(Math.random() * TIPS.length);
-document.getElementById('tip-text').textContent = TIPS[currentTipIdx];
+// INIT
+updAll();
+tipIdx=Math.floor(Math.random()*TIPS.length);
+document.getElementById('tip-text').textContent=TIPS[tipIdx];
 </script></body></html>
