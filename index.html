@@ -1115,20 +1115,21 @@ body {
   <div class="modal-overlay" id="modal-scanner"><div class="modal">
     <div class="modal-header"><h3>Produkt scannen</h3><button class="btn-close" data-action="close-scanner">&times;</button></div>
     <div class="modal-body" style="padding:0">
+      <!-- Live Kamera -->
       <div id="cam-box" style="position:relative;background:#000">
-        <video id="scan-video" autoplay playsinline style="width:100%;aspect-ratio:4/3;display:block;object-fit:cover"></video>
+        <video id="scan-video" autoplay playsinline muted style="width:100%;aspect-ratio:4/3;display:block;object-fit:cover"></video>
         <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">
           <div style="width:220px;height:100px;border:2px solid var(--color-accent);border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,0.45)"></div>
         </div>
         <div id="cam-status" style="position:absolute;bottom:0;left:0;right:0;text-align:center;padding:8px;background:rgba(0,0,0,0.7);font-size:13px;color:#8b8aa0">Kamera startet...</div>
       </div>
       <div style="padding:16px">
-        <p style="font-size:12px;color:#5c5b72;margin-bottom:8px">Barcode-Nr. eingeben:</p>
-        <div style="display:flex;gap:8px;margin-bottom:16px">
+        <p style="font-size:12px;color:#5c5b72;margin-bottom:6px">Oder Barcode-Nr. manuell eingeben:</p>
+        <div style="display:flex;gap:8px;margin-bottom:14px">
           <input type="text" id="inp-barcode" inputmode="numeric" placeholder="z.B. 4005500068648" style="flex:1;padding:10px;background:#1a1e35;border:1px solid #2a2f4a;border-radius:8px;color:#e8e6f0;font-size:15px;outline:none">
           <button class="btn btn-primary" data-action="do-barcode-search">Suchen</button>
         </div>
-        <p style="font-size:12px;color:#5c5b72;margin-bottom:8px">Oder Produkt per Name suchen:</p>
+        <p style="font-size:12px;color:#5c5b72;margin-bottom:6px">Oder Produkt per Name suchen:</p>
         <div style="display:flex;gap:8px;margin-bottom:12px">
           <input type="text" id="inp-product" placeholder="z.B. Nutella, Haferflocken" style="flex:1;padding:10px;background:#1a1e35;border:1px solid #2a2f4a;border-radius:8px;color:#e8e6f0;font-size:15px;outline:none">
           <button class="btn btn-secondary" data-action="do-name-search">Suchen</button>
@@ -1136,7 +1137,12 @@ body {
         <div id="scan-msg" style="display:none;font-size:14px;color:#8b8aa0;margin-bottom:12px"></div>
         <div id="scan-results" style="display:none;max-height:200px;overflow-y:auto;margin-bottom:12px"></div>
         <div id="scan-found" style="display:none">
-          <div id="scan-product" style="background:#1a1e35;border:1px solid #2a2f4a;border-radius:8px;padding:12px;margin-bottom:12px"></div>
+          <div id="scan-product" style="background:#1a1e35;border:1px solid #2a2f4a;border-radius:8px;padding:12px;margin-bottom:10px"></div>
+          <div style="margin-bottom:12px">
+            <label style="font-size:12px;color:#5c5b72;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.04em;font-weight:600">Wie viel gegessen? (g)</label>
+            <input type="number" id="inp-amount" value="100" min="1" step="1" style="width:100%;padding:10px;background:#222745;border:1px solid #2a2f4a;border-radius:8px;color:#e8e6f0;font-size:16px;font-weight:600;outline:none;text-align:center">
+            <div id="amount-macros" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px;text-align:center"></div>
+          </div>
           <button class="btn btn-primary btn-full" data-action="use-scanned">Übernehmen</button>
         </div>
       </div>
@@ -1251,8 +1257,8 @@ function updFood(){document.getElementById('food-date').textContent=fd(foodDate)
 function openFood(pf){document.getElementById('food-name').value=pf?pf.name:'';document.getElementById('food-amount').value=pf?pf.amount:'';document.getElementById('food-calories').value=pf?pf.calories:'';document.getElementById('food-protein').value=pf?pf.protein:'';document.getElementById('food-carbs').value=pf?pf.carbs:'';document.getElementById('food-fat').value=pf?pf.fat:'';document.getElementById('modal-food').classList.add('active');}
 function saveFood(){const nm=document.getElementById('food-name').value.trim();if(!nm)return;const it={name:nm,amount:parseInt(document.getElementById('food-amount').value)||0,calories:parseInt(document.getElementById('food-calories').value)||0,protein:parseFloat(document.getElementById('food-protein').value)||0,carbs:parseFloat(document.getElementById('food-carbs').value)||0,fat:parseFloat(document.getElementById('food-fat').value)||0};if(!D.foodLog[foodDate])D.foodLog[foodDate]=[];const was0=!D.foodLog[foodDate].length;D.foodLog[foodDate].push(it);sv();if(was0)addXP(15,'Food getrackt');closeModals();updFood();}
 
-// ═══ SCANNER ═══
-let camStream=null,camTimer=null;
+// ═══ SCANNER (Live-Kamera + Mengenrechner) ═══
+let scanBase=null,camStream=null,camTimer=null;
 
 function openScan(){
   const m=document.getElementById('modal-scanner');
@@ -1261,38 +1267,72 @@ function openScan(){
   document.getElementById('scan-msg').style.display='none';
   document.getElementById('scan-results').style.display='none';
   document.getElementById('scan-found').style.display='none';
-  scanProd=null;
+  document.getElementById('cam-box').style.display='';
+  scanProd=null;scanBase=null;
   m.classList.add('active');
   startCam();
 }
 
 async function startCam(){
-  const v=document.getElementById('scan-video'),st=document.getElementById('cam-status'),box=document.getElementById('cam-box');
+  const v=document.getElementById('scan-video'),st=document.getElementById('cam-status');
+  st.textContent='Kamera startet...';st.style.color='#8b8aa0';
   try{
     camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}}});
     v.srcObject=camStream;
     if('BarcodeDetector' in window){
-      st.textContent='Auto-Scan aktiv — Barcode hinhalten...';st.style.color='#00d4ff';
-      const det=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128']});
-      camTimer=setInterval(async()=>{if(v.readyState<2)return;try{const bc=await det.detect(v);if(bc.length>0){clearInterval(camTimer);camTimer=null;const code=bc[0].rawValue;document.getElementById('inp-barcode').value=code;st.textContent='✓ Erkannt: '+code;st.style.color='#00e676';if(navigator.vibrate)navigator.vibrate(100);await doBarcode(code);}}catch(e){}},300);
-    } else {st.textContent='Kamera aktiv — Barcode unten eingeben';st.style.color='#ffab40';}
-  }catch(e){box.style.display='none';}
+      st.textContent='Auto-Scan aktiv — Barcode in den Rahmen halten';st.style.color='#00d4ff';
+      const det=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39']});
+      camTimer=setInterval(async()=>{
+        if(v.readyState<2)return;
+        try{
+          const bc=await det.detect(v);
+          if(bc.length>0){
+            clearInterval(camTimer);camTimer=null;
+            const code=bc[0].rawValue;
+            document.getElementById('inp-barcode').value=code;
+            st.textContent='✓ Erkannt: '+code;
+            st.style.color='#00e676';
+            if(navigator.vibrate)navigator.vibrate(100);
+            await doBarcode(code);
+          }
+        }catch(e){}
+      },300);
+    } else {
+      st.textContent='Kamera aktiv — Auto-Scan nicht verfügbar, Barcode unten eingeben';
+      st.style.color='#ffab40';
+    }
+  }catch(e){
+    document.getElementById('cam-box').style.display='none';
+  }
 }
 
 function closeScan(){
   document.getElementById('modal-scanner').classList.remove('active');
   if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
   if(camTimer){clearInterval(camTimer);camTimer=null;}
-  document.getElementById('cam-box').style.display='';
 }
 
 function showMsg(t,err){const el=document.getElementById('scan-msg');el.textContent=t;el.style.display='block';el.style.color=err?'#ff4466':'#8b8aa0';}
 
 function showProd(p){
-  scanProd=p;
+  scanBase=p; // Basis pro 100g speichern
   document.getElementById('scan-found').style.display='block';
-  document.getElementById('scan-product').innerHTML=`<div style="font-weight:600;margin-bottom:8px">${p.name}</div><div style="font-size:12px;color:#8b8aa0">Pro 100g:</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px"><div><div style="font-weight:700;color:#00d4ff">${p.calories}</div><div style="font-size:11px;color:#8b8aa0">kcal</div></div><div><div style="font-weight:700">${p.protein}g</div><div style="font-size:11px;color:#8b8aa0">Protein</div></div><div><div style="font-weight:700">${p.carbs}g</div><div style="font-size:11px;color:#8b8aa0">Carbs</div></div><div><div style="font-weight:700">${p.fat}g</div><div style="font-size:11px;color:#8b8aa0">Fett</div></div></div>`;
+  document.getElementById('scan-product').innerHTML=`<div style="font-weight:600;margin-bottom:4px">${p.name}</div><div style="font-size:12px;color:#8b8aa0">N\u00e4hrwerte pro 100g: ${p.calories} kcal \u00b7 P:${p.protein}g \u00b7 C:${p.carbs}g \u00b7 F:${p.fat}g</div>`;
+  document.getElementById('inp-amount').value=100;
+  updateAmountMacros();
   document.getElementById('scan-found').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function updateAmountMacros(){
+  if(!scanBase)return;
+  const g=parseFloat(document.getElementById('inp-amount').value)||0;
+  const f=g/100;
+  const cal=Math.round(scanBase.calories*f);
+  const pro=Math.round(scanBase.protein*f*10)/10;
+  const car=Math.round(scanBase.carbs*f*10)/10;
+  const fat=Math.round(scanBase.fat*f*10)/10;
+  scanProd={name:scanBase.name,amount:g,calories:cal,protein:pro,carbs:car,fat:fat};
+  document.getElementById('amount-macros').innerHTML=`<div><div style="font-weight:700;color:#00d4ff;font-size:16px">${cal}</div><div style="font-size:11px;color:#8b8aa0">kcal</div></div><div><div style="font-weight:700;font-size:16px">${pro}g</div><div style="font-size:11px;color:#8b8aa0">Protein</div></div><div><div style="font-weight:700;font-size:16px">${car}g</div><div style="font-size:11px;color:#8b8aa0">Carbs</div></div><div><div style="font-weight:700;font-size:16px">${fat}g</div><div style="font-size:11px;color:#8b8aa0">Fett</div></div>`;
 }
 
 async function doBarcode(code){
@@ -1391,6 +1431,9 @@ document.getElementById('import-csv').addEventListener('change',e=>{if(e.target.
 // Enter keys
 document.getElementById('inp-barcode').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const v=e.target.value.trim();if(v)doBarcode(v);}});
 document.getElementById('inp-product').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const v=e.target.value.trim();if(v)doNameSearch(v);}});
+
+// Mengen-Input: live Makros umrechnen
+document.getElementById('inp-amount').addEventListener('input', updateAmountMacros);
 
 // INIT
 updAll();
