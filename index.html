@@ -1051,7 +1051,7 @@ body {
     <!-- FOOD -->
     <section id="view-food" class="view">
       <div class="view-header"><h2>Ernährung</h2>
-        <div class="btn-group"><button class="btn btn-primary" data-action="scan-food">📷 Scan</button><button class="btn btn-secondary" data-action="add-food">+ Manuell</button></div>
+        <div class="btn-group"><button class="btn btn-primary" data-action="scan-food">🔍 Suche</button><button class="btn btn-secondary" data-action="add-food">+ Manuell</button></div>
       </div>
       <div class="daily-macros">
         <div class="macro-card macro-calories"><div class="macro-value" id="macro-calories">0</div><div class="macro-label">kcal</div></div>
@@ -1181,6 +1181,7 @@ body {
         <button class="btn btn-secondary btn-full" data-action="export-csv">📁 CSV Export</button>
         <label class="btn btn-secondary btn-full" style="text-align:center;cursor:pointer">📂 CSV Import<input type="file" id="import-csv" accept=".csv" style="display:none"></label>
         <button class="btn btn-secondary btn-full" data-action="change-lang">🌐 Sprache / Language</button>
+        <button class="btn btn-secondary btn-full" data-action="show-tutorial">🎓 Tutorial</button>
         <button class="btn btn-danger btn-full" data-action="reset-data">🗑 Alles löschen</button>
       </div>
     </div>
@@ -1285,7 +1286,7 @@ function updDash(){
   D.runs.slice(-10).forEach(r=>items.push({t:'run',ic:'🏃',title:`${r.distance}km in ${r.duration}min`,date:r.date,xp:r.xpEarned||0,ts:new Date(r.date).getTime()}));
   items.sort((a,b)=>b.ts-a.ts);
   const c=document.getElementById('activity-list');
-  if(!items.length){c.innerHTML='<div class="empty-state"><p>Noch keine Aktivität.</p></div>';return;}
+  if(!items.length){c.innerHTML='<div class="empty-state"><p>'+t('noActivity')+'</p></div>';return;}
   c.innerHTML=items.slice(0,8).map(i=>`<div class="activity-item"><div class="activity-icon ${i.t}">${i.ic}</div><div class="activity-info"><div class="activity-title">${i.title}</div><div class="activity-meta">${fd(i.date)}</div></div><div class="activity-xp">+${i.xp} XP</div></div>`).join('');
 }
 
@@ -1294,18 +1295,18 @@ function updGym(){
   const prs={};
   D.workouts.forEach(w=>w.exercises.forEach(ex=>{const n=ex.name.toLowerCase().trim();if(!n)return;ex.sets.forEach(s=>{const e=s.weight*(1+s.reps/30);if(!prs[n]||e>prs[n].e)prs[n]={name:ex.name,w:s.weight,r:s.reps,e}});}));
   const pc=document.getElementById('pr-list'),ent=Object.values(prs).sort((a,b)=>b.e-a.e);
-  pc.innerHTML=ent.length?ent.map(p=>`<div class="pr-item"><div class="pr-name">${p.name}</div><div class="pr-value">${p.w}kg × ${p.r}</div></div>`).join(''):'<div class="empty-state"><p>Logge dein erstes Workout.</p></div>';
+  pc.innerHTML=ent.length?ent.map(p=>`<div class="pr-item"><div class="pr-name">${p.name}</div><div class="pr-value">${p.w}kg × ${p.r}</div></div>`).join(''):'<div class="empty-state"><p>'+t('logFirst')+'</p></div>';
   const hc=document.getElementById('workout-history'),wk=[...D.workouts].reverse().slice(0,20);
-  hc.innerHTML=wk.length?wk.map(w=>`<div class="history-item"><div class="history-header"><span class="history-date">${fd(w.date)}</span><span class="history-xp">+${w.xpEarned||0} XP</span></div>${w.notes?`<div class="history-title">${w.notes}</div>`:''}<div class="history-exercises">${w.exercises.map(e=>`<span class="exercise-tag">${e.name} (${e.sets.length}×)</span>`).join('')}</div></div>`).join(''):'<div class="empty-state"><p>Noch keine Workouts.</p></div>';
+  hc.innerHTML=wk.length?wk.map(w=>`<div class="history-item"><div class="history-header"><span class="history-date">${fd(w.date)}</span><span class="history-xp">+${w.xpEarned||0} XP</span></div>${w.notes?`<div class="history-title">${w.notes}</div>`:''}<div class="history-exercises">${w.exercises.map(e=>`<span class="exercise-tag">${e.name} (${e.sets.length}×)</span>`).join('')}</div></div>`).join(''):'<div class="empty-state"><p>'+t('noWorkouts')+'</p></div>';
 }
 
 function openWorkout(){document.getElementById('workout-date').value=new Date().toISOString().slice(0,10);document.getElementById('workout-notes').value='';document.getElementById('exercises-container').innerHTML='';addExBlock();document.getElementById('modal-workout').classList.add('active');}
-function addExBlock(){const c=document.getElementById('exercises-container'),id=gid();c.insertAdjacentHTML('beforeend',`<div class="exercise-block" data-eid="${id}"><div class="exercise-block-header"><input type="text" placeholder="Übung (z.B. Bench Press)" class="ex-name" list="ex-dl"><button class="exercise-remove" data-action="rm-ex" data-id="${id}">&times;</button></div><table class="sets-table"><thead><tr><th>Set</th><th>kg</th><th>Reps</th><th></th></tr></thead><tbody class="sets-body"><tr><td class="set-num">1</td><td><input type="number" class="set-w" step="0.5" min="0" placeholder="0"></td><td><input type="number" class="set-r" step="1" min="0" placeholder="0"></td><td><button class="set-remove" data-action="rm-set">&times;</button></td></tr></tbody></table><button class="add-set-btn" data-action="add-set" data-id="${id}">+ Set</button></div>`);if(!document.getElementById('ex-dl')){const dl=document.createElement('datalist');dl.id='ex-dl';['Bench Press','Squat','Deadlift','Overhead Press','Barbell Row','Pull-Ups','Lat Pulldown','Incline Bench','Leg Press','Romanian Deadlift','Bicep Curl','Tricep Extension','Lateral Raise','Dips','Chin-Ups'].forEach(s=>{const o=document.createElement('option');o.value=s;dl.appendChild(o);});D.workouts.forEach(w=>w.exercises.forEach(e=>{if(e.name){const o=document.createElement('option');o.value=e.name;dl.appendChild(o);}}));document.body.appendChild(dl);}}
+function addExBlock(){const c=document.getElementById('exercises-container'),id=gid();c.insertAdjacentHTML('beforeend',`<div class="exercise-block" data-eid="${id}"><div class="exercise-block-header"><input type="text" placeholder="${t('exercise')}" class="ex-name" list="ex-dl"><button class="exercise-remove" data-action="rm-ex" data-id="${id}">&times;</button></div><table class="sets-table"><thead><tr><th>Set</th><th>kg</th><th>Reps</th><th></th></tr></thead><tbody class="sets-body"><tr><td class="set-num">1</td><td><input type="number" class="set-w" step="0.5" min="0" placeholder="0"></td><td><input type="number" class="set-r" step="1" min="0" placeholder="0"></td><td><button class="set-remove" data-action="rm-set">&times;</button></td></tr></tbody></table><button class="add-set-btn" data-action="add-set" data-id="${id}">+ Set</button></div>`);if(!document.getElementById('ex-dl')){const dl=document.createElement('datalist');dl.id='ex-dl';['Bench Press','Squat','Deadlift','Overhead Press','Barbell Row','Pull-Ups','Lat Pulldown','Incline Bench','Leg Press','Romanian Deadlift','Bicep Curl','Tricep Extension','Lateral Raise','Dips','Chin-Ups'].forEach(s=>{const o=document.createElement('option');o.value=s;dl.appendChild(o);});D.workouts.forEach(w=>w.exercises.forEach(e=>{if(e.name){const o=document.createElement('option');o.value=e.name;dl.appendChild(o);}}));document.body.appendChild(dl);}}
 function addSet(eid){const b=document.querySelector(`[data-eid="${eid}"]`);if(!b)return;const tb=b.querySelector('.sets-body'),n=tb.children.length+1,tr=document.createElement('tr');tr.innerHTML=`<td class="set-num">${n}</td><td><input type="number" class="set-w" step="0.5" min="0" placeholder="0"></td><td><input type="number" class="set-r" step="1" min="0" placeholder="0"></td><td><button class="set-remove" data-action="rm-set">&times;</button></td>`;tb.appendChild(tr);}
 function saveWorkout(){const dt=document.getElementById('workout-date').value,nt=document.getElementById('workout-notes').value.trim(),blocks=document.querySelectorAll('.exercise-block'),exs=[];blocks.forEach(b=>{const nm=b.querySelector('.ex-name').value.trim();if(!nm)return;const sets=[];b.querySelectorAll('.sets-body tr').forEach(r=>{const w=parseFloat(r.querySelector('.set-w').value)||0,rp=parseInt(r.querySelector('.set-r').value)||0;if(w>0||rp>0)sets.push({weight:w,reps:rp});});if(sets.length)exs.push({name:nm,sets});});if(!exs.length)return;let pc=0;const op={};D.workouts.forEach(w=>w.exercises.forEach(e=>{const n=e.name.toLowerCase().trim();e.sets.forEach(s=>{const v=s.weight*(1+s.reps/30);if(!op[n]||v>op[n])op[n]=v;});}));exs.forEach(e=>{const n=e.name.toLowerCase().trim();e.sets.forEach(s=>{const v=s.weight*(1+s.reps/30);if(!op[n]||v>op[n]){pc++;op[n]=v;}});});const ts=exs.reduce((s,e)=>s+e.sets.length,0),xp=30+ts*3+pc*75;D.workouts.push({id:gid(),date:dt,notes:nt,exercises:exs,xpEarned:xp});sv();addXP(xp,`Workout: ${nt||exs.map(e=>e.name).join(', ')}`);closeModals();updGym();}
 
 // RUN
-function updRun(){const rs=D.runs,tk=rs.reduce((s,r)=>s+r.distance,0),lr=rs.length?Math.max(...rs.map(r=>r.distance)):0;let bp=null;rs.forEach(r=>{if(r.distance>0){const p=r.duration/r.distance;if(!bp||p<bp)bp=p;}});document.getElementById('run-total-km').textContent=tk.toFixed(1);document.getElementById('run-total-runs').textContent=rs.length;document.getElementById('run-best-pace').textContent=bp?`${Math.floor(bp)}'${String(Math.round((bp%1)*60)).padStart(2,'0')}"`:' —';document.getElementById('run-longest').textContent=lr.toFixed(1);const c=document.getElementById('run-history'),rr=[...rs].reverse().slice(0,20);c.innerHTML=rr.length?rr.map(r=>{const p=r.distance>0?r.duration/r.distance:0,ps=p>0?`${Math.floor(p)}'${String(Math.round((p%1)*60)).padStart(2,'0')}" /km`:'';return`<div class="history-item"><div class="history-header"><span class="history-date">${fd(r.date)}</span><span class="history-xp">+${r.xpEarned||0} XP</span></div><div class="history-title">${r.distance}km in ${r.duration}min</div><div class="history-detail">${ps}${r.notes?' · '+r.notes:''}</div></div>`;}).join(''):'<div class="empty-state"><p>Noch keine Läufe.</p></div>';}
+function updRun(){const rs=D.runs,tk=rs.reduce((s,r)=>s+r.distance,0),lr=rs.length?Math.max(...rs.map(r=>r.distance)):0;let bp=null;rs.forEach(r=>{if(r.distance>0){const p=r.duration/r.distance;if(!bp||p<bp)bp=p;}});document.getElementById('run-total-km').textContent=tk.toFixed(1);document.getElementById('run-total-runs').textContent=rs.length;document.getElementById('run-best-pace').textContent=bp?`${Math.floor(bp)}'${String(Math.round((bp%1)*60)).padStart(2,'0')}"`:' —';document.getElementById('run-longest').textContent=lr.toFixed(1);const c=document.getElementById('run-history'),rr=[...rs].reverse().slice(0,20);c.innerHTML=rr.length?rr.map(r=>{const p=r.distance>0?r.duration/r.distance:0,ps=p>0?`${Math.floor(p)}'${String(Math.round((p%1)*60)).padStart(2,'0')}" /km`:'';return`<div class="history-item"><div class="history-header"><span class="history-date">${fd(r.date)}</span><span class="history-xp">+${r.xpEarned||0} XP</span></div><div class="history-title">${r.distance}km in ${r.duration}min</div><div class="history-detail">${ps}${r.notes?' · '+r.notes:''}</div></div>`;}).join(''):'<div class="empty-state"><p>'+t('noRuns')+'</p></div>';}
 function openRun(){document.getElementById('run-date').value=new Date().toISOString().slice(0,10);document.getElementById('run-distance').value='';document.getElementById('run-duration').value='';document.getElementById('run-notes').value='';document.getElementById('modal-run').classList.add('active');}
 function saveRun(){const dt=document.getElementById('run-date').value,di=parseFloat(document.getElementById('run-distance').value)||0,du=parseInt(document.getElementById('run-duration').value)||0,nt=document.getElementById('run-notes').value.trim();if(di<=0&&du<=0)return;const xp=25+Math.round(di*5);D.runs.push({id:gid(),date:dt,distance:di,duration:du,notes:nt,xpEarned:xp});sv();addXP(xp,`Lauf: ${di}km`);closeModals();updRun();}
 
@@ -1329,7 +1330,7 @@ function updFood(){
   if(D.recipes.length){rs.style.display='';rl.innerHTML=D.recipes.map((r,i)=>`<div data-action="use-recipe" data-ri="${i}" style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#1a1e35;border:1px solid #2a2f4a;border-radius:8px;cursor:pointer"><div><div style="font-weight:500;font-size:13px">${r.name}</div><div style="font-size:11px;color:#5c5b72">${r.calories}kcal \u00b7 P:${r.protein}g \u00b7 C:${r.carbs}g \u00b7 F:${r.fat}g (${r.amount}g)</div></div><span data-action="del-recipe" data-ri="${i}" style="color:#5c5b72;cursor:pointer;padding:4px">&times;</span></div>`).join('');}else{rs.style.display='none';}
   // Food Log
   const c=document.getElementById('food-log');
-  if(!items.length){c.innerHTML=`<div class="empty-state"><p>Noch keine Lebensmittel f\u00fcr ${fd(foodDate)}.</p></div>`;return;}
+  if(!items.length){c.innerHTML=`<div class="empty-state"><p>${t('noFood')} (${fd(foodDate)})</p></div>`;return;}
   c.innerHTML=items.map((it,i)=>`<div class="food-item"><button data-action="fav-food" data-fi="${i}" style="background:none;border:none;font-size:16px;cursor:pointer;padding:2px">${isFav(it)?'\u2605':'\u2606'}</button><div class="food-item-info"><div class="food-item-name">${it.name}${it.amount?' ('+it.amount+'g)':''}</div><div class="food-item-macros">P:${it.protein}g \u00b7 C:${it.carbs}g \u00b7 F:${it.fat}g</div></div><div class="food-item-cal">${it.calories} kcal</div><button class="food-item-delete" data-action="del-food" data-date="${foodDate}" data-idx="${i}">&times;</button></div>`).join('');
 }
 function isFav(it){if(!D.favorites)return false;return D.favorites.some(f=>f.name===it.name);}
@@ -1399,7 +1400,7 @@ function showMsg(t,err){const el=document.getElementById('scan-msg');el.textCont
 function showProd(p){
   scanBase=p; // Basis pro 100g speichern
   document.getElementById('scan-found').style.display='block';
-  document.getElementById('scan-product').innerHTML=`<div style="font-weight:600;margin-bottom:4px">${p.name}</div><div style="font-size:12px;color:#8b8aa0">N\u00e4hrwerte pro 100g: ${p.calories} kcal \u00b7 P:${p.protein}g \u00b7 C:${p.carbs}g \u00b7 F:${p.fat}g</div>`;
+  document.getElementById('scan-product').innerHTML=`<div style="font-weight:600;margin-bottom:4px">${p.name}</div><div style="font-size:12px;color:#8b8aa0">${t('per100g')}: ${p.calories} kcal \u00b7 P:${p.protein}g \u00b7 C:${p.carbs}g \u00b7 F:${p.fat}g</div>`;
   document.getElementById('inp-amount').value=100;
   updateAmountMacros();
   document.getElementById('scan-found').scrollIntoView({behavior:'smooth',block:'nearest'});
@@ -1420,13 +1421,13 @@ function updateAmountMacros(){
 async function doBarcode(code){
   document.getElementById('scan-found').style.display='none';
   document.getElementById('scan-results').style.display='none';
-  showMsg('Lade '+code+'...',false);
+  showMsg(t('loading')+' '+code+'...',false);
   try{
     const r=await fetch('https://world.openfoodfacts.org/api/v2/product/'+code+'.json');
     const d=await r.json();
-    if(d.status===1&&d.product){const p=d.product,n=p.nutriments||{};showMsg('Gefunden:',false);showProd({name:p.product_name_de||p.product_name||'Unbekannt',amount:100,calories:Math.round(n['energy-kcal_100g']||n['energy-kcal']||0),protein:Math.round((n.proteins_100g||0)*10)/10,carbs:Math.round((n.carbohydrates_100g||0)*10)/10,fat:Math.round((n.fat_100g||0)*10)/10});}
-    else showMsg('Nicht gefunden für '+code+'. Versuch Namenssuche.',true);
-  }catch(e){showMsg('Netzwerkfehler — Internet nötig.',true);}
+    if(d.status===1&&d.product){const p=d.product,n=p.nutriments||{};showMsg(t('found'),false);showProd({name:p.product_name_de||p.product_name||'Unbekannt',amount:100,calories:Math.round(n['energy-kcal_100g']||n['energy-kcal']||0),protein:Math.round((n.proteins_100g||0)*10)/10,carbs:Math.round((n.carbohydrates_100g||0)*10)/10,fat:Math.round((n.fat_100g||0)*10)/10});}
+    else showMsg(t('notFound')+' '+code+'. '+t('tryName'),true);
+  }catch(e){showMsg(t('netError'),true);}
 }
 
 async function doNameSearch(q){
@@ -1437,34 +1438,34 @@ async function doNameSearch(q){
   const ql=q.toLowerCase();
   const basicHits=BASIC_FOODS.filter(f=>f.name.toLowerCase().includes(ql));
   if(basicHits.length){
-    showMsg(basicHits.length+' Basis-Treffer'+(basicHits.length<8?' + suche online...':'')+':', false);
+    showMsg(basicHits.length+' '+t('basisHits')+(basicHits.length<8?' + '+t('searchOnline')+'...':'')+':', false);
     const sl=document.getElementById('scan-results');
     sl.style.display='block';
     sl._data=basicHits.map(b=>({product_name_de:b.name,nutriments:{'energy-kcal_100g':b.cal,proteins_100g:b.p,carbohydrates_100g:b.c,fat_100g:b.f},brands:'Basis'}));
-    sl.innerHTML=basicHits.map((b,i)=>`<div data-ri="${i}" style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#1a1e35;border:1px solid #353b5e;border-radius:8px;margin-bottom:6px;cursor:pointer"><div style="min-width:0;flex:1"><div style="font-weight:500;font-size:14px">${b.name}</div><div style="font-size:11px;color:#5c5b72">Basis-Lebensmittel</div></div><div style="font-weight:700;font-size:14px;color:#ffab40;margin-left:12px;white-space:nowrap">${b.cal} kcal</div></div>`).join('');
+    sl.innerHTML=basicHits.map((b,i)=>`<div data-ri="${i}" style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#1a1e35;border:1px solid #353b5e;border-radius:8px;margin-bottom:6px;cursor:pointer"><div style="min-width:0;flex:1"><div style="font-weight:500;font-size:14px">${b.name}</div><div style="font-size:11px;color:#5c5b72">${t('basisFood')}</div></div><div style="font-weight:700;font-size:14px;color:#ffab40;margin-left:12px;white-space:nowrap">${b.cal} kcal</div></div>`).join('');
     if(basicHits.length>=8)return; // genug Treffer
   }
-  showMsg((basicHits.length?basicHits.length+' Basis + ':'')+'Suche online "'+q+'"...',false);
+  showMsg((basicHits.length?basicHits.length+' '+t('basisFood')+' + ':'')+t('searchOnline')+' "'+q+'"...',false);
   try{
     const r=await fetch('https://world.openfoodfacts.org/cgi/search.pl?search_terms='+encodeURIComponent(q)+'&search_simple=1&action=process&json=1&page_size=8&fields=product_name,product_name_de,nutriments,brands');
     const d=await r.json();
     const ps=(d.products||[]).filter(p=>p.product_name||p.product_name_de);
     // Basis + Online kombinieren
     const combined=[...(basicHits.length?basicHits.map(b=>({product_name_de:b.name,nutriments:{'energy-kcal_100g':b.cal,proteins_100g:b.p,carbohydrates_100g:b.c,fat_100g:b.f},brands:'Basis'})):[]),...ps];
-    if(!combined.length){showMsg('Nichts gefunden für "'+q+'".',true);return;}
-    showMsg(combined.length+' Ergebnisse:',false);
+    if(!combined.length){showMsg(t('nothingFound')+' "'+q+'".',true);return;}
+    showMsg(combined.length+' '+t('results')+':',false);
     const sl=document.getElementById('scan-results');
     sl.style.display='block';
     sl._data=combined;
-    sl.innerHTML=combined.map((p,i)=>{const n=p.nutriments||{},nm=p.product_name_de||p.product_name||'?',br=p.brands||'',kc=Math.round(n['energy-kcal_100g']||n['energy-kcal']||0);const isBasis=br==='Basis';return`<div data-ri="${i}" style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:${isBasis?'#1a2038':'#1a1e35'};border:1px solid ${isBasis?'#353b5e':'#2a2f4a'};border-radius:8px;margin-bottom:6px;cursor:pointer"><div style="min-width:0;flex:1"><div style="font-weight:500;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${nm}</div><div style="font-size:11px;color:${isBasis?'#50c878':'#5c5b72'}">${isBasis?'\u2713 Basis-Lebensmittel':br}</div></div><div style="font-weight:700;font-size:14px;color:#ffab40;margin-left:12px;white-space:nowrap">${kc} kcal</div></div>`;}).join('');
-  }catch(e){showMsg('Netzwerkfehler.',true);}
+    sl.innerHTML=combined.map((p,i)=>{const n=p.nutriments||{},nm=p.product_name_de||p.product_name||'?',br=p.brands||'',kc=Math.round(n['energy-kcal_100g']||n['energy-kcal']||0);const isBasis=br==='Basis';return`<div data-ri="${i}" style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:${isBasis?'#1a2038':'#1a1e35'};border:1px solid ${isBasis?'#353b5e':'#2a2f4a'};border-radius:8px;margin-bottom:6px;cursor:pointer"><div style="min-width:0;flex:1"><div style="font-weight:500;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${nm}</div><div style="font-size:11px;color:${isBasis?'#50c878':'#5c5b72'}">${isBasis?'\u2713 '+t('basisFood'):br}</div></div><div style="font-weight:700;font-size:14px;color:#ffab40;margin-left:12px;white-space:nowrap">${kc} kcal</div></div>`;}).join('');
+  }catch(e){showMsg(t('netErrorShort'),true);}
 }
 
 function pickResult(i){
   const sl=document.getElementById('scan-results'),ps=sl._data;if(!ps||!ps[i])return;
   const p=ps[i],n=p.nutriments||{};
   sl.style.display='none';
-  showMsg('Ausgewählt:',false);
+  showMsg(t('selected'),false);
   showProd({name:p.product_name_de||p.product_name||'?',amount:100,calories:Math.round(n['energy-kcal_100g']||n['energy-kcal']||0),protein:Math.round((n.proteins_100g||0)*10)/10,carbs:Math.round((n.carbohydrates_100g||0)*10)/10,fat:Math.round((n.fat_100g||0)*10)/10});
 }
 
@@ -1507,6 +1508,7 @@ document.addEventListener('click',e=>{
     else if(act==='close-scanner')closeScan();
     else if(act==='close-rankup')document.getElementById('rankup-overlay').classList.remove('active');
     else if(act==='change-lang'){closeModals();showLangPicker();}
+    else if(act==='show-tutorial'){closeModals();showOnboarding();}
     else if(act==='next-tip'){const tips=t('tips');tipIdx=(tipIdx+1)%tips.length;document.getElementById('tip-text').textContent=tips[tipIdx];}
     else if(act==='food-prev-day'){const d=new Date(foodDate);d.setDate(d.getDate()-1);foodDate=d.toISOString().slice(0,10);updFood();}
     else if(act==='food-next-day'){const d=new Date(foodDate);d.setDate(d.getDate()+1);foodDate=d.toISOString().slice(0,10);updFood();}
@@ -1550,7 +1552,7 @@ de:{
   totalKm:'Gesamt km',bestPace:'Bester Pace',longestKm:'L\u00e4ngster km',
   runTips:'Lauf-Tipps',runLog:'Lauf-Verlauf',noRuns:'Noch keine L\u00e4ufe.',
   logRun:'Lauf loggen',distKm:'Distanz (km)',durationMin:'Dauer (min)',
-  nutrition:'Ern\u00e4hrung',scan:'\ud83d\udcf7 Scan',manual:'+ Manuell',
+  nutrition:'Ern\u00e4hrung',scan:'\ud83d\udd0d Suche',manual:'+ Manuell',
   protein:'Protein',carbs:'Carbs',fat:'Fett',
   today:'Heute',yesterday:'Gestern',
   noFood:'Noch keine Lebensmittel.',
@@ -1571,6 +1573,15 @@ de:{
   respectable:'Respektabel',elite:'Elite-Niveau',unstoppable:'Unaufhaltsam',
   topPerformer:'Top-Performer',masterClass:'Meisterklasse',legend:'Legende',unreachable:'Unerreichbar',
   basisFood:'Basis-Lebensmittel',language:'Sprache',changeLang:'\ud83c\udf10 Sprache / Language',
+  logFirst:'Logge dein erstes Workout.',
+  loading:'Lade',found:'Gefunden:',notFound:'Nicht gefunden f\u00fcr',tryName:'Versuch Namenssuche.',
+  netError:'Netzwerkfehler \u2014 Internet n\u00f6tig.',netErrorShort:'Netzwerkfehler.',
+  nothingFound:'Nichts gefunden f\u00fcr',tryOther:'Andere Begriffe probieren.',
+  basisHits:'Basis-Treffer',searchOnline:'Suche online',results:'Ergebnisse',
+  selected:'Ausgew\u00e4hlt:',per100g:'pro 100g',
+  phPushDay:'z.B. Push Day',phEasyRun:'z.B. Easy Run',phFood:'z.B. Haferflocken',
+  phBarcode:'z.B. 4005500068648',phProduct:'z.B. Nutella, Haferflocken',
+  phRecipe:'z.B. Protein-Oats',phPortion:'z.B. 400',
   tips:['Starte mit Couch-to-5K: 1 Min Laufen, 1 Min Gehen. Jede Woche steigern.','Lauf langsam genug, dass du dich unterhalten k\u00f6nntest.','Investiere in gute Laufschuhe \u2014 wichtigstes Equipment.','10%-Regel: Nie mehr als 10% Volumen pro Woche steigern.','5 Min Aufw\u00e4rmen mit z\u00fcgigem Gehen vor dem Lauf.','3x pro Woche reicht. Dein K\u00f6rper braucht Erholungstage.','Atem-Rhythmus: 3 Schritte ein, 2 Schritte aus.','Musik oder Podcasts wirken Wunder f\u00fcr die Motivation.','Morgens laufen gibt dir Energie f\u00fcr den ganzen Tag.','Konkretes Ziel setzen: z.B. 5 km in 30 Min.'],
 },
 en:{
@@ -1583,7 +1594,7 @@ en:{
   totalKm:'Total km',bestPace:'Best Pace',longestKm:'Longest km',
   runTips:'Running Tips',runLog:'Run History',noRuns:'No runs yet.',
   logRun:'Log Run',distKm:'Distance (km)',durationMin:'Duration (min)',
-  nutrition:'Nutrition',scan:'\ud83d\udcf7 Scan',manual:'+ Manual',
+  nutrition:'Nutrition',scan:'\ud83d\udd0d Search',manual:'+ Manual',
   protein:'Protein',carbs:'Carbs',fat:'Fat',
   today:'Today',yesterday:'Yesterday',
   noFood:'No food logged.',
@@ -1604,6 +1615,15 @@ en:{
   respectable:'Respectable',elite:'Elite Level',unstoppable:'Unstoppable',
   topPerformer:'Top Performer',masterClass:'Master Class',legend:'Legend',unreachable:'Unreachable',
   basisFood:'Basic food',language:'Language',changeLang:'\ud83c\udf10 Sprache / Language',
+  logFirst:'Log your first workout.',
+  loading:'Loading',found:'Found:',notFound:'Not found for',tryName:'Try name search.',
+  netError:'Network error \u2014 internet required.',netErrorShort:'Network error.',
+  nothingFound:'Nothing found for',tryOther:'Try different terms.',
+  basisHits:'basic matches',searchOnline:'searching online',results:'results',
+  selected:'Selected:',per100g:'per 100g',
+  phPushDay:'e.g. Push Day',phEasyRun:'e.g. Easy Run',phFood:'e.g. Oatmeal',
+  phBarcode:'e.g. 4005500068648',phProduct:'e.g. Nutella, Oatmeal',
+  phRecipe:'e.g. Protein Oats',phPortion:'e.g. 400',
   tips:['Start with Couch-to-5K: alternate 1 min running and 1 min walking.','Run slow enough to hold a conversation.','Invest in good running shoes \u2014 most important gear.','10% rule: never increase weekly volume by more than 10%.','Warm up 5 min with brisk walking before your run.','3x per week is enough. Your body needs recovery days.','Breathing rhythm: 3 steps in, 2 steps out.','Music or podcasts work wonders for motivation.','Morning runs give you energy for the whole day.','Set a concrete goal: e.g. 5K in 30 min.'],
 }
 };
@@ -1679,6 +1699,16 @@ function applyLang(){
   document.querySelector('[data-action="close-rankup"]').textContent=t('continue');
   // Tips
   const tips=t('tips');document.getElementById('tip-text').textContent=tips[tipIdx%tips.length];
+  // Placeholders
+  document.getElementById('workout-notes').placeholder=t('phPushDay');
+  document.getElementById('run-notes').placeholder=t('phEasyRun');
+  document.getElementById('food-name').placeholder=t('phFood');
+  document.getElementById('inp-barcode').placeholder=t('phBarcode');
+  document.getElementById('inp-product').placeholder=t('phProduct');
+  document.getElementById('recipe-name').placeholder=t('phRecipe');
+  // Scanner how-much label
+  const howMuchLabel=document.querySelector('#modal-scanner label[style]');
+  if(howMuchLabel&&howMuchLabel.textContent.includes('g)'))howMuchLabel.textContent=t('howMuchG');
   updDash();
 }
 
@@ -1696,8 +1726,102 @@ function showLangPicker(){
     </div>
   </div>`;
   document.body.appendChild(ov);
-  document.getElementById('pick-de').onclick=()=>{setLang('de');ov.remove();};
-  document.getElementById('pick-en').onclick=()=>{setLang('en');ov.remove();};
+  const isFirstTime=!D.lang;
+  document.getElementById('pick-de').onclick=()=>{setLang('de');ov.remove();if(isFirstTime)showOnboarding();};
+  document.getElementById('pick-en').onclick=()=>{setLang('en');ov.remove();if(isFirstTime)showOnboarding();};
+}
+
+// ═══ ONBOARDING TUTORIAL ═══
+function showOnboarding(){
+  const lang=getLang();
+  const steps=[
+    {
+      icon:'\ud83c\udfc6',
+      title:lang==='en'?'Welcome to GrindRank!':'Willkommen bei GrindRank!',
+      desc:lang==='en'
+        ?'Your personal fitness tracker with a ranked system — just like League of Legends. Level up by working out!'
+        :'Dein pers\u00f6nlicher Fitness-Tracker mit Ranked System \u2014 genau wie in League of Legends. Steige auf durch Training!'
+    },
+    {
+      icon:'\ud83c\udffb',
+      title:'\ud83c\udffb Gym Tracker',
+      desc:lang==='en'
+        ?'Log workouts, track sets, reps and weight. Personal Records (PRs) are detected automatically and earn you bonus XP!'
+        :'Logge Workouts, tracke Sets, Reps und Gewicht. Personal Records (PRs) werden automatisch erkannt und geben Bonus-XP!'
+    },
+    {
+      icon:'\ud83c\udfc3',
+      title:lang==='en'?'\ud83c\udfc3 Running':'\ud83c\udfc3 Laufen',
+      desc:lang==='en'
+        ?'Track your runs with distance and pace. Tips for beginners are included to help you get started.'
+        :'Tracke Deine L\u00e4ufe mit Distanz und Pace. Tipps f\u00fcr Einsteiger sind inklusive, damit du direkt loslegen kannst.'
+    },
+    {
+      icon:'\ud83e\udd66',
+      title:lang==='en'?'\ud83d\udd0d Nutrition':'\ud83d\udd0d Ern\u00e4hrung',
+      desc:lang==='en'
+        ?'Scan barcodes, search products by name, or use the built-in basic foods. Save favorites and create custom recipes.'
+        :'Scanne Barcodes, suche Produkte per Name oder nutze die eingebauten Basis-Lebensmittel. Favoriten und eigene Rezepte m\u00f6glich.'
+    },
+    {
+      icon:'\u2b50',
+      title:lang==='en'?'\u2b50 Ranked System':'\u2b50 Ranked System',
+      desc:lang==='en'
+        ?'Earn XP from every workout, run, and food entry. Climb from Iron to Challenger \u2014 just like in a real ranked game!'
+        :'Sammle XP durch Workouts, L\u00e4ufe und Food-Tracking. Steige auf von Iron bis Challenger \u2014 wie in einem echten Ranked-Spiel!'
+    },
+    {
+      icon:'\ud83d\ude80',
+      title:lang==='en'?"Let's go!":'Los geht\'s!',
+      desc:lang==='en'
+        ?'You\'re all set! Start logging your first workout or run. Every rep counts.'
+        :'Du bist bereit! Starte jetzt mit deinem ersten Workout oder Lauf. Jede Wiederholung z\u00e4hlt.'
+    }
+  ];
+
+  let step=0;
+  const total=steps.length;
+
+  const ov=document.createElement('div');
+  ov.id='onboarding-overlay';
+  ov.style.cssText='position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.92);padding:16px';
+
+  function render(){
+    const s=steps[step];
+    const isLast=step===total-1;
+    const dotsHtml=steps.map((_,i)=>`<div style="width:${i===step?20:8}px;height:8px;border-radius:4px;background:${i===step?'var(--color-accent)':'var(--color-border)'};transition:width 0.3s ease"></div>`).join('');
+    ov.innerHTML=`
+      <div style="max-width:400px;width:100%;background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:32px 24px;text-align:center;animation:scaleIn 0.35s cubic-bezier(0.16,1,0.3,1)">
+        <div style="font-size:64px;margin-bottom:16px;line-height:1">${s.icon}</div>
+        <div style="font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--color-text);margin-bottom:12px;letter-spacing:-0.01em">${s.title}</div>
+        <p style="color:var(--color-text-muted);font-size:15px;line-height:1.55;margin-bottom:28px">${s.desc}</p>
+        <div style="display:flex;justify-content:center;gap:6px;margin-bottom:24px">${dotsHtml}</div>
+        <div style="display:flex;gap:10px;justify-content:center">
+          <button id="ob-skip" style="padding:10px 20px;background:none;border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-text-muted);font-size:14px;cursor:pointer;font-family:var(--font-body)">${lang==='en'?'Skip':'\u00dcberspringen'}</button>
+          ${isLast
+            ?`<button id="ob-start" style="padding:10px 28px;background:var(--color-accent);border:none;border-radius:var(--radius-md);color:#000;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--font-display);letter-spacing:0.02em">${lang==='en'?'Start!':'Start!'}</button>`
+            :`<button id="ob-next" style="padding:10px 28px;background:var(--color-accent);border:none;border-radius:var(--radius-md);color:#000;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--font-display);letter-spacing:0.02em">${lang==='en'?'Next \u2192':'Weiter \u2192'}</button>`
+          }
+        </div>
+      </div>`;
+
+    document.getElementById('ob-skip').onclick=closeOnboarding;
+    if(isLast){
+      document.getElementById('ob-start').onclick=closeOnboarding;
+    }else{
+      document.getElementById('ob-next').onclick=()=>{step++;render();};
+    }
+  }
+
+  function closeOnboarding(){
+    D.onboarded=true;sv();
+    ov.style.opacity='0';
+    ov.style.transition='opacity 0.25s ease';
+    setTimeout(()=>ov.remove(),260);
+  }
+
+  document.body.appendChild(ov);
+  render();
 }
 
 // INIT
