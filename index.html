@@ -1064,6 +1064,16 @@ body {
         <span class="date-label" id="food-date">Heute</span>
         <button class="btn-icon" data-action="food-next-day"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
       </div>
+      <!-- Favoriten -->
+      <div id="favs-section" style="display:none">
+        <div class="section-header"><h3>⭐ Favoriten</h3></div>
+        <div id="favs-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px"></div>
+      </div>
+      <!-- Eigene Rezepte -->
+      <div id="recipes-section" style="display:none">
+        <div class="section-header"><h3>📖 Rezepte</h3><button class="btn btn-secondary" data-action="new-recipe" style="padding:4px 12px;font-size:12px">+ Neu</button></div>
+        <div id="recipes-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px"></div>
+      </div>
       <div class="food-log" id="food-log"><div class="empty-state"><p>Noch keine Lebensmittel.</p></div></div>
     </section>
   </main>
@@ -1109,6 +1119,18 @@ body {
       <div class="form-row"><div class="form-group"><label>Carbs (g)</label><input type="number" id="food-carbs" step="0.1" min="0"></div><div class="form-group"><label>Fett (g)</label><input type="number" id="food-fat" step="0.1" min="0"></div></div>
     </div>
     <div class="modal-footer"><button class="btn btn-primary btn-full" data-action="save-food">Speichern</button></div>
+  </div></div>
+
+  <!-- REZEPT MODAL -->
+  <div class="modal-overlay" id="modal-recipe"><div class="modal">
+    <div class="modal-header"><h3>Rezept erstellen</h3><button class="btn-close" data-action="close-modal">&times;</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label>Rezeptname</label><input type="text" id="recipe-name" placeholder="z.B. Protein-Oats"></div>
+      <div class="form-group"><label>Portionsgröße (g)</label><input type="number" id="recipe-portion" step="1" min="1" value="100" placeholder="z.B. 400"></div>
+      <div class="form-row"><div class="form-group"><label>kcal (gesamt)</label><input type="number" id="recipe-cal" step="1" min="0"></div><div class="form-group"><label>Protein (g)</label><input type="number" id="recipe-protein" step="0.1" min="0"></div></div>
+      <div class="form-row"><div class="form-group"><label>Carbs (g)</label><input type="number" id="recipe-carbs" step="0.1" min="0"></div><div class="form-group"><label>Fett (g)</label><input type="number" id="recipe-fat" step="0.1" min="0"></div></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-primary btn-full" data-action="save-recipe">Rezept speichern</button></div>
   </div></div>
 
   <!-- SCANNER MODAL -->
@@ -1194,8 +1216,42 @@ function rankFor(xp){let r=RT[0];for(let i=RT.length-1;i>=0;i--)if(xp>=RT[i].xs)
 
 const TIPS=["Starte mit Couch-to-5K: 1 Min Laufen, 1 Min Gehen. Jede Woche steigern.","Lauf langsam genug, dass du dich unterhalten könntest.","Investiere in gute Laufschuhe — wichtigstes Equipment.","10%-Regel: Nie mehr als 10% Volumen pro Woche steigern.","5 Min Aufwärmen mit zügigem Gehen vor dem Lauf.","3x pro Woche reicht. Dein Körper braucht Erholungstage.","Atem-Rhythmus: 3 Schritte ein, 2 Schritte aus.","Musik oder Podcasts wirken Wunder für die Motivation.","Morgens laufen gibt dir Energie für den ganzen Tag.","Konkretes Ziel setzen: z.B. 5 km in 30 Min.","500ml Wasser 1-2h vor dem Lauf trinken.","Nach dem Lauf dehnen, nicht davor. Dynamisch aufwärmen.","Vergleich dich nur mit dir selbst — jeder Lauf zählt.","Bei Regen laufen fühlt sich danach unglaublich gut an.","1x pro Woche Intervalltraining: 30s Sprint, 90s Gehen, 8x.","1-2h vor dem Lauf leicht essen: Banane, Toast, Haferflocken.","Finde eine schöne Laufstrecke — Park, Strand, Wald.","Tracke deine Läufe. Fortschritt sehen = bester Motivator."];
 
+// ═══ BASIS-LEBENSMITTEL (pro 100g) ═══
+const BASIC_FOODS=[
+{name:'Ei (gekocht)',cal:155,p:13,c:1.1,f:11},
+{name:'Eiweiß (nur)',cal:52,p:11,c:0.7,f:0.2},
+{name:'Eigelb',cal:322,p:16,c:3.6,f:27},
+{name:'Reis (gekocht)',cal:130,p:2.7,c:28,f:0.3},
+{name:'Nudeln (gekocht)',cal:131,p:5,c:25,f:1.1},
+{name:'Hähnchenbrust',cal:165,p:31,c:0,f:3.6},
+{name:'Rinderhack (mager)',cal:176,p:20,c:0,f:10},
+{name:'Lachs',cal:208,p:20,c:0,f:13},
+{name:'Thunfisch (Dose)',cal:116,p:26,c:0,f:1},
+{name:'Haferflocken',cal:372,p:13.5,c:59,f:7},
+{name:'Vollkornbrot',cal:247,p:8.5,c:41,f:3.5},
+{name:'Toastbrot',cal:265,p:8,c:49,f:3.5},
+{name:'Banane',cal:89,p:1.1,c:23,f:0.3},
+{name:'Apfel',cal:52,p:0.3,c:14,f:0.2},
+{name:'Magerquark',cal:67,p:12,c:4,f:0.3},
+{name:'Griechischer Joghurt',cal:97,p:9,c:3.6,f:5},
+{name:'Milch 1.5%',cal:47,p:3.4,c:4.9,f:1.5},
+{name:'Milch 3.5%',cal:64,p:3.3,c:4.8,f:3.5},
+{name:'Whey Protein (Pulver)',cal:400,p:80,c:8,f:6},
+{name:'Kartoffeln (gekocht)',cal:77,p:2,c:17,f:0.1},
+{name:'Süßkartoffel',cal:86,p:1.6,c:20,f:0.1},
+{name:'Brokkoli',cal:34,p:2.8,c:7,f:0.4},
+{name:'Avocado',cal:160,p:2,c:8.5,f:15},
+{name:'Erdnussbutter',cal:588,p:25,c:20,f:50},
+{name:'Mandeln',cal:579,p:21,c:22,f:49},
+{name:'Olivenöl',cal:884,p:0,c:0,f:100},
+{name:'Butter',cal:717,p:0.9,c:0.1,f:81},
+{name:'Käse (Gouda)',cal:356,p:25,c:2.2,f:27},
+{name:'Mozzarella',cal:280,p:28,c:3.1,f:17},
+{name:'Tofu',cal:144,p:17,c:3,f:8},
+];
+
 const SKEY='grindrank_data';
-const DDEF={profile:{name:'',bodyWeight:0,joinDate:new Date().toISOString().slice(0,10)},workouts:[],runs:[],foodLog:{},xp:0,xpHistory:[]};
+const DDEF={profile:{name:'',bodyWeight:0,joinDate:new Date().toISOString().slice(0,10)},workouts:[],runs:[],foodLog:{},favorites:[],recipes:[],xp:0,xpHistory:[]};
 function ld(){try{const r=localStorage.getItem(SKEY);if(r)return JSON.parse(r);}catch(e){}return JSON.parse(JSON.stringify(DDEF));}
 let D=ld(),tipIdx=0,foodDate=new Date().toISOString().slice(0,10),scanProd=null;
 function sv(){try{localStorage.setItem(SKEY,JSON.stringify(D));}catch(e){}}
@@ -1253,7 +1309,32 @@ function openRun(){document.getElementById('run-date').value=new Date().toISOStr
 function saveRun(){const dt=document.getElementById('run-date').value,di=parseFloat(document.getElementById('run-distance').value)||0,du=parseInt(document.getElementById('run-duration').value)||0,nt=document.getElementById('run-notes').value.trim();if(di<=0&&du<=0)return;const xp=25+Math.round(di*5);D.runs.push({id:gid(),date:dt,distance:di,duration:du,notes:nt,xpEarned:xp});sv();addXP(xp,`Lauf: ${di}km`);closeModals();updRun();}
 
 // FOOD
-function updFood(){document.getElementById('food-date').textContent=fd(foodDate);const items=D.foodLog[foodDate]||[];let cal=0,pr=0,ca=0,fa=0;items.forEach(i=>{cal+=i.calories;pr+=i.protein;ca+=i.carbs;fa+=i.fat;});document.getElementById('macro-calories').textContent=Math.round(cal);document.getElementById('macro-protein').textContent=Math.round(pr)+'g';document.getElementById('macro-carbs').textContent=Math.round(ca)+'g';document.getElementById('macro-fat').textContent=Math.round(fa)+'g';const c=document.getElementById('food-log');if(!items.length){c.innerHTML=`<div class="empty-state"><p>Noch keine Lebensmittel für ${fd(foodDate)}.</p></div>`;return;}c.innerHTML=items.map((it,i)=>`<div class="food-item"><div class="food-item-info"><div class="food-item-name">${it.name}${it.amount?' ('+it.amount+'g)':''}</div><div class="food-item-macros">P:${it.protein}g · C:${it.carbs}g · F:${it.fat}g</div></div><div class="food-item-cal">${it.calories} kcal</div><button class="food-item-delete" data-action="del-food" data-date="${foodDate}" data-idx="${i}">&times;</button></div>`).join('');}
+function updFood(){
+  document.getElementById('food-date').textContent=fd(foodDate);
+  const items=D.foodLog[foodDate]||[];
+  let cal=0,pr=0,ca=0,fa=0;
+  items.forEach(i=>{cal+=i.calories;pr+=i.protein;ca+=i.carbs;fa+=i.fat;});
+  document.getElementById('macro-calories').textContent=Math.round(cal);
+  document.getElementById('macro-protein').textContent=Math.round(pr)+'g';
+  document.getElementById('macro-carbs').textContent=Math.round(ca)+'g';
+  document.getElementById('macro-fat').textContent=Math.round(fa)+'g';
+  // Favoriten
+  if(!D.favorites)D.favorites=[];
+  const fs=document.getElementById('favs-section'),fl=document.getElementById('favs-list');
+  if(D.favorites.length){fs.style.display='';fl.innerHTML=D.favorites.map((f,i)=>`<button data-action="use-fav" data-fi="${i}" style="padding:6px 12px;background:#1a1e35;border:1px solid #2a2f4a;border-radius:20px;color:#e8e6f0;font-size:13px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:4px"><span style="color:#ffd700">\u2605</span>${f.name}<span data-action="del-fav" data-fi="${i}" style="color:#5c5b72;margin-left:4px;cursor:pointer">&times;</span></button>`).join('');}else{fs.style.display='none';}
+  // Rezepte
+  if(!D.recipes)D.recipes=[];
+  const rs=document.getElementById('recipes-section'),rl=document.getElementById('recipes-list');
+  if(D.recipes.length){rs.style.display='';rl.innerHTML=D.recipes.map((r,i)=>`<div data-action="use-recipe" data-ri="${i}" style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#1a1e35;border:1px solid #2a2f4a;border-radius:8px;cursor:pointer"><div><div style="font-weight:500;font-size:13px">${r.name}</div><div style="font-size:11px;color:#5c5b72">${r.calories}kcal \u00b7 P:${r.protein}g \u00b7 C:${r.carbs}g \u00b7 F:${r.fat}g (${r.amount}g)</div></div><span data-action="del-recipe" data-ri="${i}" style="color:#5c5b72;cursor:pointer;padding:4px">&times;</span></div>`).join('');}else{rs.style.display='none';}
+  // Food Log
+  const c=document.getElementById('food-log');
+  if(!items.length){c.innerHTML=`<div class="empty-state"><p>Noch keine Lebensmittel f\u00fcr ${fd(foodDate)}.</p></div>`;return;}
+  c.innerHTML=items.map((it,i)=>`<div class="food-item"><button data-action="fav-food" data-fi="${i}" style="background:none;border:none;font-size:16px;cursor:pointer;padding:2px">${isFav(it)?'\u2605':'\u2606'}</button><div class="food-item-info"><div class="food-item-name">${it.name}${it.amount?' ('+it.amount+'g)':''}</div><div class="food-item-macros">P:${it.protein}g \u00b7 C:${it.carbs}g \u00b7 F:${it.fat}g</div></div><div class="food-item-cal">${it.calories} kcal</div><button class="food-item-delete" data-action="del-food" data-date="${foodDate}" data-idx="${i}">&times;</button></div>`).join('');
+}
+function isFav(it){if(!D.favorites)return false;return D.favorites.some(f=>f.name===it.name);}
+function toggleFav(idx){const items=D.foodLog[foodDate]||[];const it=items[idx];if(!it)return;if(!D.favorites)D.favorites=[];const fi=D.favorites.findIndex(f=>f.name===it.name);if(fi>=0)D.favorites.splice(fi,1);else D.favorites.push({name:it.name,amount:it.amount,calories:it.calories,protein:it.protein,carbs:it.carbs,fat:it.fat});sv();updFood();}
+function useFav(i){if(!D.favorites||!D.favorites[i])return;const f=D.favorites[i];openFood(f);}
+function delFav(i){if(!D.favorites)return;D.favorites.splice(i,1);sv();updFood();}
 function openFood(pf){document.getElementById('food-name').value=pf?pf.name:'';document.getElementById('food-amount').value=pf?pf.amount:'';document.getElementById('food-calories').value=pf?pf.calories:'';document.getElementById('food-protein').value=pf?pf.protein:'';document.getElementById('food-carbs').value=pf?pf.carbs:'';document.getElementById('food-fat').value=pf?pf.fat:'';document.getElementById('modal-food').classList.add('active');}
 function saveFood(){const nm=document.getElementById('food-name').value.trim();if(!nm)return;const it={name:nm,amount:parseInt(document.getElementById('food-amount').value)||0,calories:parseInt(document.getElementById('food-calories').value)||0,protein:parseFloat(document.getElementById('food-protein').value)||0,carbs:parseFloat(document.getElementById('food-carbs').value)||0,fat:parseFloat(document.getElementById('food-fat').value)||0};if(!D.foodLog[foodDate])D.foodLog[foodDate]=[];const was0=!D.foodLog[foodDate].length;D.foodLog[foodDate].push(it);sv();if(was0)addXP(15,'Food getrackt');closeModals();updFood();}
 
@@ -1348,20 +1429,33 @@ async function doBarcode(code){
 }
 
 async function doNameSearch(q){
-  if(!q||q.length<2)return;
+  if(!q||q.length<1)return;
   document.getElementById('scan-found').style.display='none';
   document.getElementById('scan-results').style.display='none';
-  showMsg('Suche "'+q+'"...',false);
+  // Zuerst in Basis-Lebensmitteln suchen
+  const ql=q.toLowerCase();
+  const basicHits=BASIC_FOODS.filter(f=>f.name.toLowerCase().includes(ql));
+  if(basicHits.length){
+    showMsg(basicHits.length+' Basis-Treffer'+(basicHits.length<8?' + suche online...':'')+':', false);
+    const sl=document.getElementById('scan-results');
+    sl.style.display='block';
+    sl._data=basicHits.map(b=>({product_name_de:b.name,nutriments:{'energy-kcal_100g':b.cal,proteins_100g:b.p,carbohydrates_100g:b.c,fat_100g:b.f},brands:'Basis'}));
+    sl.innerHTML=basicHits.map((b,i)=>`<div data-ri="${i}" style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#1a1e35;border:1px solid #353b5e;border-radius:8px;margin-bottom:6px;cursor:pointer"><div style="min-width:0;flex:1"><div style="font-weight:500;font-size:14px">${b.name}</div><div style="font-size:11px;color:#5c5b72">Basis-Lebensmittel</div></div><div style="font-weight:700;font-size:14px;color:#ffab40;margin-left:12px;white-space:nowrap">${b.cal} kcal</div></div>`).join('');
+    if(basicHits.length>=8)return; // genug Treffer
+  }
+  showMsg((basicHits.length?basicHits.length+' Basis + ':'')+'Suche online "'+q+'"...',false);
   try{
     const r=await fetch('https://world.openfoodfacts.org/cgi/search.pl?search_terms='+encodeURIComponent(q)+'&search_simple=1&action=process&json=1&page_size=8&fields=product_name,product_name_de,nutriments,brands');
     const d=await r.json();
     const ps=(d.products||[]).filter(p=>p.product_name||p.product_name_de);
-    if(!ps.length){showMsg('Nichts gefunden für "'+q+'". Andere Begriffe probieren.',true);return;}
-    showMsg(ps.length+' Ergebnisse — antippen zum Auswählen:',false);
+    // Basis + Online kombinieren
+    const combined=[...(basicHits.length?basicHits.map(b=>({product_name_de:b.name,nutriments:{'energy-kcal_100g':b.cal,proteins_100g:b.p,carbohydrates_100g:b.c,fat_100g:b.f},brands:'Basis'})):[]),...ps];
+    if(!combined.length){showMsg('Nichts gefunden für "'+q+'".',true);return;}
+    showMsg(combined.length+' Ergebnisse:',false);
     const sl=document.getElementById('scan-results');
     sl.style.display='block';
-    sl._data=ps;
-    sl.innerHTML=ps.map((p,i)=>{const n=p.nutriments||{},nm=p.product_name_de||p.product_name||'?',br=p.brands||'',kc=Math.round(n['energy-kcal_100g']||n['energy-kcal']||0);return`<div data-ri="${i}" style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#1a1e35;border:1px solid #2a2f4a;border-radius:8px;margin-bottom:6px;cursor:pointer"><div style="min-width:0;flex:1"><div style="font-weight:500;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${nm}</div>${br?`<div style="font-size:11px;color:#5c5b72">${br}</div>`:''}</div><div style="font-weight:700;font-size:14px;color:#ffab40;margin-left:12px;white-space:nowrap">${kc} kcal</div></div>`;}).join('');
+    sl._data=combined;
+    sl.innerHTML=combined.map((p,i)=>{const n=p.nutriments||{},nm=p.product_name_de||p.product_name||'?',br=p.brands||'',kc=Math.round(n['energy-kcal_100g']||n['energy-kcal']||0);const isBasis=br==='Basis';return`<div data-ri="${i}" style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:${isBasis?'#1a2038':'#1a1e35'};border:1px solid ${isBasis?'#353b5e':'#2a2f4a'};border-radius:8px;margin-bottom:6px;cursor:pointer"><div style="min-width:0;flex:1"><div style="font-weight:500;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${nm}</div><div style="font-size:11px;color:${isBasis?'#50c878':'#5c5b72'}">${isBasis?'\u2713 Basis-Lebensmittel':br}</div></div><div style="font-weight:700;font-size:14px;color:#ffab40;margin-left:12px;white-space:nowrap">${kc} kcal</div></div>`;}).join('');
   }catch(e){showMsg('Netzwerkfehler.',true);}
 }
 
@@ -1416,6 +1510,13 @@ document.addEventListener('click',e=>{
     else if(act==='food-next-day'){const d=new Date(foodDate);d.setDate(d.getDate()+1);foodDate=d.toISOString().slice(0,10);updFood();}
     else if(act==='do-barcode-search'){const v=document.getElementById('inp-barcode').value.trim();if(v)doBarcode(v);}
     else if(act==='do-name-search'){const v=document.getElementById('inp-product').value.trim();if(v)doNameSearch(v);}
+    else if(act==='fav-food')toggleFav(+a.dataset.fi);
+    else if(act==='use-fav')useFav(+a.dataset.fi);
+    else if(act==='del-fav'){e.stopPropagation();delFav(+a.dataset.fi);}
+    else if(act==='new-recipe'){document.getElementById('recipe-name').value='';document.getElementById('recipe-portion').value='';document.getElementById('recipe-cal').value='';document.getElementById('recipe-protein').value='';document.getElementById('recipe-carbs').value='';document.getElementById('recipe-fat').value='';document.getElementById('modal-recipe').classList.add('active');}
+    else if(act==='save-recipe'){const nm=document.getElementById('recipe-name').value.trim();if(!nm)return;if(!D.recipes)D.recipes=[];D.recipes.push({name:nm,amount:parseInt(document.getElementById('recipe-portion').value)||100,calories:parseInt(document.getElementById('recipe-cal').value)||0,protein:parseFloat(document.getElementById('recipe-protein').value)||0,carbs:parseFloat(document.getElementById('recipe-carbs').value)||0,fat:parseFloat(document.getElementById('recipe-fat').value)||0});sv();closeModals();updFood();}
+    else if(act==='use-recipe'){if(!D.recipes)return;const r=D.recipes[+a.dataset.ri];if(r)openFood(r);}
+    else if(act==='del-recipe'){e.stopPropagation();if(!D.recipes)return;D.recipes.splice(+a.dataset.ri,1);sv();updFood();}
     else if(act==='use-scanned')useScanned();
     else if(act==='del-food'){const dt=a.dataset.date,idx=+a.dataset.idx;if(D.foodLog[dt]){D.foodLog[dt].splice(idx,1);if(!D.foodLog[dt].length)delete D.foodLog[dt];sv();updFood();}}
   }
