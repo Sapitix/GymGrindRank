@@ -1180,6 +1180,7 @@ body {
       <div class="profile-actions">
         <button class="btn btn-secondary btn-full" data-action="export-csv">📁 CSV Export</button>
         <label class="btn btn-secondary btn-full" style="text-align:center;cursor:pointer">📂 CSV Import<input type="file" id="import-csv" accept=".csv" style="display:none"></label>
+        <button class="btn btn-secondary btn-full" data-action="change-lang">🌐 Sprache / Language</button>
         <button class="btn btn-danger btn-full" data-action="reset-data">🗑 Alles löschen</button>
       </div>
     </div>
@@ -1256,7 +1257,7 @@ function ld(){try{const r=localStorage.getItem(SKEY);if(r)return JSON.parse(r);}
 let D=ld(),tipIdx=0,foodDate=new Date().toISOString().slice(0,10),scanProd=null;
 function sv(){try{localStorage.setItem(SKEY,JSON.stringify(D));}catch(e){}}
 function gid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
-function fd(d){const t=new Date().toISOString().slice(0,10),y=new Date(Date.now()-864e5).toISOString().slice(0,10);if(d===t)return'Heute';if(d===y)return'Gestern';const p=d.split('-');return`${p[2]}.${p[1]}.${p[0]}`;}
+function fd(d){const td=new Date().toISOString().slice(0,10),yd=new Date(Date.now()-864e5).toISOString().slice(0,10);if(d===td)return t('today');if(d===yd)return t('yesterday');const p=d.split('-');return`${p[2]}.${p[1]}.${p[0]}`;}
 
 function addXP(a,reason){const old=rankFor(D.xp);D.xp+=a;D.xpHistory.push({date:new Date().toISOString(),amount:a,reason});const nw=rankFor(D.xp);sv();updDash();if(nw.i>old.i)showRankUp(nw);}
 
@@ -1267,13 +1268,13 @@ function updDash(){
   const e=document.getElementById('rank-emblem');e.style.borderColor=r.color;e.style.boxShadow=`0 0 30px ${r.color}40`;
   document.querySelector('.rank-icon').textContent=r.icon;
   const l=document.getElementById('rank-label');l.textContent=r.name;l.style.color=r.color;
-  const sub={Iron:'Dein Weg beginnt',Bronze:'Aufsteigend',Silver:'Solide Basis',Gold:'Respektabel',Platinum:'Elite-Niveau',Emerald:'Unaufhaltsam',Diamond:'Top-Performer',Master:'Meisterklasse',Grandmaster:'Legende',Challenger:'Unerreichbar'};
+  const sub={Iron:t('yourPath'),Bronze:t('rising'),Silver:t('solidBase'),Gold:t('respectable'),Platinum:t('elite'),Emerald:t('unstoppable'),Diamond:t('topPerformer'),Master:t('masterClass'),Grandmaster:t('legend'),Challenger:t('unreachable')};
   document.getElementById('rank-subtitle').textContent=sub[r.rn]||'';
   document.getElementById('xp-current').textContent=r.xi;
   document.getElementById('xp-target').textContent=r.xn||'∞';
   document.getElementById('xp-bar-fill').style.width=`${Math.min(r.p*100,100)}%`;
   document.getElementById('xp-bar-fill').style.background=`linear-gradient(90deg,${r.color},${r.n?r.n.color:r.color})`;
-  document.getElementById('xp-next').textContent=r.n?`Nächster Rang: ${r.n.name}`:'Höchster Rang!';
+  document.getElementById('xp-next').textContent=r.n?t('nextRank')+r.n.name:t('maxRank');
   document.getElementById('stat-workouts').textContent=D.workouts.length;
   document.getElementById('stat-runs').textContent=D.runs.length;
   document.getElementById('stat-streak').textContent=streak();
@@ -1505,7 +1506,8 @@ document.addEventListener('click',e=>{
     else if(act==='close-modal')closeModals();
     else if(act==='close-scanner')closeScan();
     else if(act==='close-rankup')document.getElementById('rankup-overlay').classList.remove('active');
-    else if(act==='next-tip'){tipIdx=(tipIdx+1)%TIPS.length;document.getElementById('tip-text').textContent=TIPS[tipIdx];}
+    else if(act==='change-lang'){closeModals();showLangPicker();}
+    else if(act==='next-tip'){const tips=t('tips');tipIdx=(tipIdx+1)%tips.length;document.getElementById('tip-text').textContent=tips[tipIdx];}
     else if(act==='food-prev-day'){const d=new Date(foodDate);d.setDate(d.getDate()-1);foodDate=d.toISOString().slice(0,10);updFood();}
     else if(act==='food-next-day'){const d=new Date(foodDate);d.setDate(d.getDate()+1);foodDate=d.toISOString().slice(0,10);updFood();}
     else if(act==='do-barcode-search'){const v=document.getElementById('inp-barcode').value.trim();if(v)doBarcode(v);}
@@ -1536,8 +1538,124 @@ document.getElementById('inp-product').addEventListener('keydown',e=>{if(e.key==
 // Mengen-Input: live Makros umrechnen
 document.getElementById('inp-amount').addEventListener('input', updateAmountMacros);
 
+// ═══ SPRACHE / i18n ═══
+const I18N={
+de:{
+  home:'Home',gym:'Gym',run:'Laufen',food:'Food',
+  workouts:'Workouts',runs:'L\u00e4ufe',streak:'Streak',totalXp:'Gesamt XP',
+  lastActivity:'Letzte Aktivit\u00e4t',noActivity:'Noch keine Aktivit\u00e4t.',
+  pr:'Personal Records',workoutLog:'Workout-Verlauf',noWorkouts:'Noch keine Workouts.',
+  logWorkout:'Workout loggen',addExercise:'+ \u00dcbung',exercise:'\u00dcbung (z.B. Bench Press)',
+  date:'Datum',note:'Notiz',save:'Speichern',
+  totalKm:'Gesamt km',bestPace:'Bester Pace',longestKm:'L\u00e4ngster km',
+  runTips:'Lauf-Tipps',runLog:'Lauf-Verlauf',noRuns:'Noch keine L\u00e4ufe.',
+  logRun:'Lauf loggen',distKm:'Distanz (km)',durationMin:'Dauer (min)',
+  nutrition:'Ern\u00e4hrung',scan:'\ud83d\udcf7 Scan',manual:'+ Manuell',
+  protein:'Protein',carbs:'Carbs',fat:'Fett',
+  today:'Heute',yesterday:'Gestern',
+  noFood:'Noch keine Lebensmittel.',
+  favorites:'\u2b50 Favoriten',recipes:'\ud83d\udcd6 Rezepte',newRecipe:'+ Neu',
+  recipeName:'Rezeptname',portionG:'Portionsgr\u00f6\u00dfe (g)',
+  createRecipe:'Rezept erstellen',saveRecipe:'Rezept speichern',
+  addFood:'Lebensmittel',name:'Name',amountG:'Menge (g)',
+  scanProduct:'Produkt scannen',barcodeManual:'Oder Barcode-Nr. manuell eingeben:',
+  searchByName:'Oder Produkt per Name suchen:',search:'Suchen',
+  howMuchG:'Wie viel gegessen? (g)',useProduct:'\u00dcbernehmen',
+  camStarting:'Kamera startet...',autoScan:'Auto-Scan aktiv \u2014 Barcode in den Rahmen halten',
+  detected:'\u2713 Erkannt: ',camNoScan:'Kamera aktiv \u2014 Barcode unten eingeben',
+  profile:'Profil',bodyWeight:'K\u00f6rpergewicht (kg)',csvExport:'\ud83d\udcc1 CSV Export',
+  csvImport:'\ud83d\udcc2 CSV Import',deleteAll:'\ud83d\uddd1 Alles l\u00f6schen',
+  deleteConfirm:'Alle Daten l\u00f6schen?',importOk:'Import OK!',importFail:'Import fehlgeschlagen.',
+  rankUp:'AUFSTIEG!',continue:'Weiter',nextRank:'N\u00e4chster Rang: ',maxRank:'H\u00f6chster Rang!',
+  yourPath:'Dein Weg beginnt',rising:'Aufsteigend',solidBase:'Solide Basis',
+  respectable:'Respektabel',elite:'Elite-Niveau',unstoppable:'Unaufhaltsam',
+  topPerformer:'Top-Performer',masterClass:'Meisterklasse',legend:'Legende',unreachable:'Unerreichbar',
+  basisFood:'Basis-Lebensmittel',language:'Sprache',changeLang:'\ud83c\udf10 Sprache / Language',
+  tips:['Starte mit Couch-to-5K: 1 Min Laufen, 1 Min Gehen. Jede Woche steigern.','Lauf langsam genug, dass du dich unterhalten k\u00f6nntest.','Investiere in gute Laufschuhe \u2014 wichtigstes Equipment.','10%-Regel: Nie mehr als 10% Volumen pro Woche steigern.','5 Min Aufw\u00e4rmen mit z\u00fcgigem Gehen vor dem Lauf.','3x pro Woche reicht. Dein K\u00f6rper braucht Erholungstage.','Atem-Rhythmus: 3 Schritte ein, 2 Schritte aus.','Musik oder Podcasts wirken Wunder f\u00fcr die Motivation.','Morgens laufen gibt dir Energie f\u00fcr den ganzen Tag.','Konkretes Ziel setzen: z.B. 5 km in 30 Min.'],
+},
+en:{
+  home:'Home',gym:'Gym',run:'Run',food:'Food',
+  workouts:'Workouts',runs:'Runs',streak:'Streak',totalXp:'Total XP',
+  lastActivity:'Recent Activity',noActivity:'No activity yet.',
+  pr:'Personal Records',workoutLog:'Workout History',noWorkouts:'No workouts yet.',
+  logWorkout:'Log Workout',addExercise:'+ Exercise',exercise:'Exercise (e.g. Bench Press)',
+  date:'Date',note:'Note',save:'Save',
+  totalKm:'Total km',bestPace:'Best Pace',longestKm:'Longest km',
+  runTips:'Running Tips',runLog:'Run History',noRuns:'No runs yet.',
+  logRun:'Log Run',distKm:'Distance (km)',durationMin:'Duration (min)',
+  nutrition:'Nutrition',scan:'\ud83d\udcf7 Scan',manual:'+ Manual',
+  protein:'Protein',carbs:'Carbs',fat:'Fat',
+  today:'Today',yesterday:'Yesterday',
+  noFood:'No food logged.',
+  favorites:'\u2b50 Favorites',recipes:'\ud83d\udcd6 Recipes',newRecipe:'+ New',
+  recipeName:'Recipe name',portionG:'Portion size (g)',
+  createRecipe:'Create Recipe',saveRecipe:'Save Recipe',
+  addFood:'Add Food',name:'Name',amountG:'Amount (g)',
+  scanProduct:'Scan Product',barcodeManual:'Or enter barcode manually:',
+  searchByName:'Or search by product name:',search:'Search',
+  howMuchG:'How much eaten? (g)',useProduct:'Add',
+  camStarting:'Camera starting...',autoScan:'Auto-scan active \u2014 hold barcode in frame',
+  detected:'\u2713 Detected: ',camNoScan:'Camera active \u2014 enter barcode below',
+  profile:'Profile',bodyWeight:'Body weight (kg)',csvExport:'\ud83d\udcc1 CSV Export',
+  csvImport:'\ud83d\udcc2 CSV Import',deleteAll:'\ud83d\uddd1 Delete All',
+  deleteConfirm:'Delete all data?',importOk:'Import OK!',importFail:'Import failed.',
+  rankUp:'RANK UP!',continue:'Continue',nextRank:'Next rank: ',maxRank:'Max rank!',
+  yourPath:'Your journey begins',rising:'Rising',solidBase:'Solid Base',
+  respectable:'Respectable',elite:'Elite Level',unstoppable:'Unstoppable',
+  topPerformer:'Top Performer',masterClass:'Master Class',legend:'Legend',unreachable:'Unreachable',
+  basisFood:'Basic food',language:'Language',changeLang:'\ud83c\udf10 Sprache / Language',
+  tips:['Start with Couch-to-5K: alternate 1 min running and 1 min walking.','Run slow enough to hold a conversation.','Invest in good running shoes \u2014 most important gear.','10% rule: never increase weekly volume by more than 10%.','Warm up 5 min with brisk walking before your run.','3x per week is enough. Your body needs recovery days.','Breathing rhythm: 3 steps in, 2 steps out.','Music or podcasts work wonders for motivation.','Morning runs give you energy for the whole day.','Set a concrete goal: e.g. 5K in 30 min.'],
+}
+};
+
+function t(key){return (I18N[getLang()]||I18N.de)[key]||key;}
+function getLang(){return D.lang||'de';}
+function setLang(l){D.lang=l;sv();applyLang();}
+
+function applyLang(){
+  const L=getLang();
+  // Nav
+  document.querySelectorAll('.nav-item').forEach(b=>{const v=b.dataset.view;const sp=b.querySelector('span');if(sp)sp.textContent=t(v);});
+  // Stat labels
+  const labels=document.querySelectorAll('.stat-label');
+  const labelKeys=['workouts','runs','streak','totalXp'];
+  labels.forEach((l,i)=>{if(labelKeys[i])l.textContent=t(labelKeys[i]);});
+  // Section headers etc
+  document.querySelector('#view-home .section-header h2').textContent=t('lastActivity');
+  document.querySelector('#view-gym .view-header h2').textContent=t('gym');
+  document.querySelector('#view-gym [data-action="new-workout"]').textContent='+ Workout';
+  document.querySelector('#view-run .view-header h2').textContent=t('run');
+  document.querySelector('#view-food .view-header h2').textContent=t('nutrition');
+  // Update tips
+  document.getElementById('tip-text').textContent=t('tips')[tipIdx%t('tips').length];
+  // Rankup text
+  document.querySelector('.rankup-text').textContent=t('rankUp');
+  document.querySelector('[data-action="close-rankup"]').textContent=t('continue');
+  updDash();
+}
+
+// ═══ SPRACHAUSWAHL OVERLAY ═══
+function showLangPicker(){
+  const ov=document.createElement('div');
+  ov.id='lang-overlay';
+  ov.style.cssText='position:fixed;inset:0;z-index:400;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.85)';
+  ov.innerHTML=`<div style="text-align:center;animation:scaleIn 0.3s ease">
+    <div style="font-family:var(--font-display);font-size:24px;font-weight:700;margin-bottom:8px;color:#e8e6f0">\ud83c\udf10 Sprache / Language</div>
+    <p style="color:#8b8aa0;font-size:14px;margin-bottom:24px">W\u00e4hle deine Sprache / Choose your language</p>
+    <div style="display:flex;gap:12px;justify-content:center">
+      <button id="pick-de" style="padding:16px 32px;background:#1a1e35;border:2px solid #2a2f4a;border-radius:12px;color:#e8e6f0;font-size:16px;font-weight:600;cursor:pointer">\ud83c\udde9\ud83c\uddea Deutsch</button>
+      <button id="pick-en" style="padding:16px 32px;background:#1a1e35;border:2px solid #2a2f4a;border-radius:12px;color:#e8e6f0;font-size:16px;font-weight:600;cursor:pointer">\ud83c\uddec\ud83c\udde7 English</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+  document.getElementById('pick-de').onclick=()=>{setLang('de');ov.remove();};
+  document.getElementById('pick-en').onclick=()=>{setLang('en');ov.remove();};
+}
+
 // INIT
+if(!D.lang) showLangPicker(); // Erster Start
 updAll();
-tipIdx=Math.floor(Math.random()*TIPS.length);
-document.getElementById('tip-text').textContent=TIPS[tipIdx];
+tipIdx=Math.floor(Math.random()*10);
+document.getElementById('tip-text').textContent=t('tips')[tipIdx];
+applyLang();
 </script></body></html>
