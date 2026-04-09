@@ -1143,23 +1143,41 @@ body {
       </div>
     </div>
 
-    <!-- Scanner Modal (verbessert) -->
+    <!-- Scanner Modal (Kamera Auto-Scan + Produkt-Suche) -->
     <div class="modal-overlay" id="modal-scanner">
-      <div class="modal modal-scanner">
-        <div class="modal-header"><h3>Barcode scannen</h3><button class="btn-close" data-action="close-modal">&times;</button></div>
+      <div class="modal">
+        <div class="modal-header"><h3>Produkt scannen</h3><button class="btn-close" data-action="close-modal">&times;</button></div>
         <div class="modal-body" style="padding:0">
-          <div class="scanner-container">
-            <video id="scanner-video" autoplay playsinline></video>
-            <div class="scanner-overlay"><div class="scanner-frame"></div></div>
+          <!-- Kamera Area -->
+          <div id="scanner-cam-area" style="position:relative;background:#000">
+            <video id="scanner-video" autoplay playsinline style="width:100%;aspect-ratio:4/3;display:block;object-fit:cover"></video>
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">
+              <div style="width:220px;height:100px;border:2px solid var(--color-accent);border-radius:var(--radius-md);box-shadow:0 0 0 9999px rgba(0,0,0,0.45);animation:pulse-border 2s infinite"></div>
+            </div>
+            <div id="scanner-status" style="position:absolute;bottom:0;left:0;right:0;text-align:center;padding:var(--space-2);background:rgba(0,0,0,0.6);font-size:var(--text-xs);color:var(--color-text-muted)">Barcode in den Rahmen halten...</div>
           </div>
-          <p class="scanner-hint" id="scanner-hint">Kamera wird gestartet...</p>
-          <div id="manual-barcode-area" style="padding:0 var(--space-4) var(--space-3);display:flex;gap:var(--space-2)">
-            <input type="text" id="manual-barcode" inputmode="numeric" placeholder="Barcode-Nr. eingeben" style="flex:1;padding:var(--space-3);background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-text);font-size:var(--text-base);outline:none">
-            <button class="btn btn-primary" data-action="manual-barcode-search">Suchen</button>
-          </div>
-          <div class="scanner-result" id="scanner-result" style="display:none;padding:var(--space-4)">
-            <div class="scanner-product" id="scanner-product" style="background:var(--color-surface-2);border-radius:var(--radius-md);padding:var(--space-3);margin-bottom:var(--space-3)"></div>
-            <button class="btn btn-primary btn-full" data-action="add-scanned-food">Übernehmen & bearbeiten</button>
+          <div style="padding:var(--space-4)">
+            <!-- Barcode manuell -->
+            <p style="font-size:var(--text-xs);color:var(--color-text-faint);margin-bottom:var(--space-2)">Oder Barcode-Nr. manuell eingeben:</p>
+            <div style="display:flex;gap:var(--space-2);margin-bottom:var(--space-3)">
+              <input type="text" id="manual-barcode" inputmode="numeric" placeholder="z.B. 4005500068648" style="flex:1;padding:var(--space-2) var(--space-3);background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-text);font-size:var(--text-sm);outline:none">
+              <button class="btn btn-primary" data-action="manual-barcode-search" style="padding:var(--space-2) var(--space-3)">Suchen</button>
+            </div>
+            <!-- Produkt-Name Suche -->
+            <p style="font-size:var(--text-xs);color:var(--color-text-faint);margin-bottom:var(--space-2)">Oder Produkt per Name suchen:</p>
+            <div style="display:flex;gap:var(--space-2);margin-bottom:var(--space-3)">
+              <input type="text" id="product-name-search" placeholder="z.B. Nutella, Haferflocken..." style="flex:1;padding:var(--space-2) var(--space-3);background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-text);font-size:var(--text-sm);outline:none">
+              <button class="btn btn-secondary" data-action="search-product-name" style="padding:var(--space-2) var(--space-3)">Suchen</button>
+            </div>
+            <!-- Suchergebnisse -->
+            <div id="search-results-list" style="display:none;max-height:200px;overflow-y:auto;margin-bottom:var(--space-3)"></div>
+            <!-- Status -->
+            <p class="scanner-hint" id="scanner-hint" style="display:none;font-size:var(--text-sm);color:var(--color-text-muted);margin-bottom:var(--space-3)"></p>
+            <!-- Gefundenes Produkt -->
+            <div class="scanner-result" id="scanner-result" style="display:none">
+              <div class="scanner-product" id="scanner-product" style="background:var(--color-surface-2);border-radius:var(--radius-md);padding:var(--space-3);margin-bottom:var(--space-3)"></div>
+              <button class="btn btn-primary btn-full" data-action="add-scanned-food">Übernehmen & bearbeiten</button>
+            </div>
           </div>
         </div>
       </div>
@@ -1664,110 +1682,194 @@ function deleteFood(date, idx) {
   }
 }
 
-// ── BARCODE SCANNER (verbessert) ──
+// ── BARCODE SCANNER (Auto-Scan + Namenssuche) ──
 let scannerStream = null;
 let scannerInterval = null;
 
 async function openScanner() {
   const modal = document.getElementById('modal-scanner');
   const video = document.getElementById('scanner-video');
+  const status = document.getElementById('scanner-status');
   const hint = document.getElementById('scanner-hint');
   const result = document.getElementById('scanner-result');
-  const manualArea = document.getElementById('manual-barcode-area');
+  const searchList = document.getElementById('search-results-list');
 
   result.style.display = 'none';
-  hint.textContent = 'Kamera wird gestartet...';
+  hint.style.display = 'none';
+  searchList.style.display = 'none';
   scannedProduct = null;
-  manualArea.style.display = 'flex';
   document.getElementById('manual-barcode').value = '';
+  document.getElementById('product-name-search').value = '';
+  status.textContent = 'Kamera wird gestartet...';
 
   modal.classList.add('active');
 
-  // Versuche Kamera + BarcodeDetector
-  let cameraOk = false;
+  // Kamera sofort starten
   try {
     scannerStream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
     });
     video.srcObject = scannerStream;
-    video.style.display = 'block';
-    cameraOk = true;
 
+    // Auto-Scan mit BarcodeDetector
     if ('BarcodeDetector' in window) {
-      hint.textContent = 'Halte den Barcode in den Rahmen';
-      const detector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e'] });
+      status.textContent = 'Auto-Scan aktiv — Barcode in den Rahmen halten...';
+      status.style.color = 'var(--color-accent)';
+      const detector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39'] });
       scannerInterval = setInterval(async () => {
         if (video.readyState < 2) return;
         try {
           const barcodes = await detector.detect(video);
           if (barcodes.length > 0) {
             clearInterval(scannerInterval);
-            document.getElementById('manual-barcode').value = barcodes[0].rawValue;
-            await lookupBarcode(barcodes[0].rawValue);
+            scannerInterval = null;
+            const code = barcodes[0].rawValue;
+            document.getElementById('manual-barcode').value = code;
+            status.textContent = `✓ Barcode erkannt: ${code}`;
+            status.style.color = 'var(--color-success)';
+            // Vibrations-Feedback wenn verfügbar
+            if (navigator.vibrate) navigator.vibrate(100);
+            await lookupBarcode(code);
           }
         } catch (e) {}
-      }, 500);
+      }, 300);
     } else {
-      hint.textContent = 'Auto-Scan nicht unterstützt — gib den Barcode unten ein:';
+      status.textContent = 'Kamera aktiv — Auto-Scan nicht unterstützt, Barcode unten eingeben';
+      status.style.color = 'var(--color-warning)';
     }
   } catch (e) {
-    video.style.display = 'none';
-    hint.textContent = 'Kamera nicht verfügbar — gib den Barcode manuell ein:';
+    // Kamera nicht verfügbar
+    document.getElementById('scanner-cam-area').style.display = 'none';
   }
 }
 
-async function lookupBarcode(barcode) {
+function showHint(text, isError) {
   const hint = document.getElementById('scanner-hint');
+  hint.textContent = text;
+  hint.style.display = 'block';
+  hint.style.color = isError ? 'var(--color-danger)' : 'var(--color-text-muted)';
+}
+
+function showProductResult(product) {
+  scannedProduct = product;
   const result = document.getElementById('scanner-result');
-  hint.textContent = `Barcode ${barcode} — lade Produktdaten...`;
+  result.style.display = 'block';
+  document.getElementById('scanner-product').innerHTML = `
+    <div style="font-weight:600;margin-bottom:var(--space-2)">${product.name}</div>
+    <div style="font-size:var(--text-xs);color:var(--color-text-muted)">Pro 100g:</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-2);margin-top:var(--space-2)">
+      <div><div style="font-weight:700;color:var(--color-accent)">${product.calories}</div><div style="font-size:var(--text-xs);color:var(--color-text-muted)">kcal</div></div>
+      <div><div style="font-weight:700">${product.protein}g</div><div style="font-size:var(--text-xs);color:var(--color-text-muted)">Protein</div></div>
+      <div><div style="font-weight:700">${product.carbs}g</div><div style="font-size:var(--text-xs);color:var(--color-text-muted)">Carbs</div></div>
+      <div><div style="font-weight:700">${product.fat}g</div><div style="font-size:var(--text-xs);color:var(--color-text-muted)">Fett</div></div>
+    </div>`;
+  // Scroll zum Ergebnis
+  result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+async function lookupBarcode(barcode) {
+  const result = document.getElementById('scanner-result');
+  showHint(`Lade Daten für ${barcode}...`, false);
+  result.style.display = 'none';
 
   try {
     const resp = await fetch(`https://world.openfoodfacts.org/api/v2/product/${barcode}.json`);
     const data = await resp.json();
-
     if (data.status === 1 && data.product) {
       const p = data.product;
       const n = p.nutriments || {};
-      scannedProduct = {
-        name: p.product_name || p.product_name_de || 'Unbekannt',
+      const product = {
+        name: p.product_name_de || p.product_name || 'Unbekannt',
         amount: 100,
         calories: Math.round(n['energy-kcal_100g'] || n['energy-kcal'] || 0),
         protein: Math.round((n.proteins_100g || 0) * 10) / 10,
         carbs: Math.round((n.carbohydrates_100g || 0) * 10) / 10,
         fat: Math.round((n.fat_100g || 0) * 10) / 10,
       };
-      hint.textContent = 'Produkt gefunden:';
-      result.style.display = 'block';
-      document.getElementById('scanner-product').innerHTML = `
-        <div style="font-weight:600;margin-bottom:var(--space-2)">${scannedProduct.name}</div>
-        <div style="font-size:var(--text-xs);color:var(--color-text-muted)">Pro 100g:</div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-2);margin-top:var(--space-2)">
-          <div><div style="font-weight:700;color:var(--color-accent)">${scannedProduct.calories}</div><div style="font-size:var(--text-xs);color:var(--color-text-muted)">kcal</div></div>
-          <div><div style="font-weight:700">${scannedProduct.protein}g</div><div style="font-size:var(--text-xs);color:var(--color-text-muted)">Protein</div></div>
-          <div><div style="font-weight:700">${scannedProduct.carbs}g</div><div style="font-size:var(--text-xs);color:var(--color-text-muted)">Carbs</div></div>
-          <div><div style="font-weight:700">${scannedProduct.fat}g</div><div style="font-size:var(--text-xs);color:var(--color-text-muted)">Fett</div></div>
-        </div>`;
+      showHint('Produkt gefunden:', false);
+      showProductResult(product);
     } else {
-      hint.textContent = `Produkt nicht in OpenFoodFacts gefunden (${barcode}). Du kannst es manuell eingeben.`;
-      result.style.display = 'none';
+      showHint(`Kein Produkt für Barcode ${barcode} gefunden. Versuch es per Namenssuche.`, true);
     }
   } catch (e) {
-    hint.textContent = 'Netzwerkfehler — brauchst Internet für die Produkt-Suche.';
-    result.style.display = 'none';
+    showHint('Netzwerkfehler — Internet nötig für Produktsuche.', true);
   }
+}
+
+// ── PRODUKT-NAMENSSUCHE ──
+async function searchProductByName(query) {
+  if (!query || query.length < 2) return;
+  const searchList = document.getElementById('search-results-list');
+  showHint(`Suche nach "${query}"...`, false);
+  searchList.style.display = 'none';
+  document.getElementById('scanner-result').style.display = 'none';
+
+  try {
+    const resp = await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=8&fields=product_name,product_name_de,nutriments,brands,code`);
+    const data = await resp.json();
+    const products = (data.products || []).filter(p => p.product_name || p.product_name_de);
+
+    if (products.length === 0) {
+      showHint(`Keine Ergebnisse für "${query}". Versuch andere Begriffe oder gib es manuell ein.`, true);
+      return;
+    }
+
+    showHint(`${products.length} Ergebnisse:`, false);
+    searchList.style.display = 'block';
+    searchList.innerHTML = products.map((p, i) => {
+      const n = p.nutriments || {};
+      const name = p.product_name_de || p.product_name || 'Unbekannt';
+      const brand = p.brands || '';
+      const kcal = Math.round(n['energy-kcal_100g'] || n['energy-kcal'] || 0);
+      return `<div class="search-result-item" data-idx="${i}" style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-3);background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(--radius-md);margin-bottom:var(--space-2);cursor:pointer;transition:background 0.15s">
+        <div style="min-width:0;flex:1">
+          <div style="font-weight:500;font-size:var(--text-sm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</div>
+          ${brand ? `<div style="font-size:var(--text-xs);color:var(--color-text-faint)">${brand}</div>` : ''}
+        </div>
+        <div style="font-weight:700;font-size:var(--text-sm);color:var(--color-warning);margin-left:var(--space-3);white-space:nowrap">${kcal} kcal</div>
+      </div>`;
+    }).join('');
+
+    // Store products for selection
+    searchList._products = products;
+  } catch (e) {
+    showHint('Netzwerkfehler bei der Suche.', true);
+  }
+}
+
+function selectSearchResult(idx) {
+  const searchList = document.getElementById('search-results-list');
+  const products = searchList._products;
+  if (!products || !products[idx]) return;
+
+  const p = products[idx];
+  const n = p.nutriments || {};
+  const product = {
+    name: p.product_name_de || p.product_name || 'Unbekannt',
+    amount: 100,
+    calories: Math.round(n['energy-kcal_100g'] || n['energy-kcal'] || 0),
+    protein: Math.round((n.proteins_100g || 0) * 10) / 10,
+    carbs: Math.round((n.carbohydrates_100g || 0) * 10) / 10,
+    fat: Math.round((n.fat_100g || 0) * 10) / 10,
+  };
+  searchList.style.display = 'none';
+  showHint('Produkt ausgewählt:', false);
+  showProductResult(product);
 }
 
 function addScannedFood() {
   if (!scannedProduct) return;
   stopScanner();
   closeAllModals();
-  // Öffne Food-Modal mit vorausgefüllten Daten zum Bearbeiten
   openFoodModal(scannedProduct);
 }
 
 function stopScanner() {
   if (scannerStream) { scannerStream.getTracks().forEach(t => t.stop()); scannerStream = null; }
   if (scannerInterval) { clearInterval(scannerInterval); scannerInterval = null; }
+  // Kamera-Area zurücksetzen für nächstes Mal
+  const camArea = document.getElementById('scanner-cam-area');
+  if (camArea) camArea.style.display = '';
 }
 
 // ── PROFILE ──
@@ -1901,6 +2003,17 @@ document.addEventListener('click', (e) => {
       if (input && input.value.trim()) lookupBarcode(input.value.trim());
       break;
     }
+    case 'search-product-name': {
+      const input = document.getElementById('product-name-search');
+      if (input && input.value.trim()) searchProductByName(input.value.trim());
+      break;
+    }
+  }
+
+  // Klick auf Suchergebnis-Item
+  const resultItem = e.target.closest('.search-result-item');
+  if (resultItem && resultItem.dataset.idx !== undefined) {
+    selectSearchResult(parseInt(resultItem.dataset.idx));
   }
 });
 
@@ -1914,6 +2027,14 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
 
 document.getElementById('import-csv').addEventListener('change', (e) => {
   if (e.target.files[0]) importCSV(e.target.files[0]);
+});
+
+// Enter-Taste für Suchfelder
+document.getElementById('manual-barcode').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); const v = e.target.value.trim(); if (v) lookupBarcode(v); }
+});
+document.getElementById('product-name-search').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); const v = e.target.value.trim(); if (v) searchProductByName(v); }
 });
 
 // ── INIT ──
