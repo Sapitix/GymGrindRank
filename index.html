@@ -1357,12 +1357,12 @@ function openScan(){
 
 async function startCam(){
   const v=document.getElementById('scan-video'),st=document.getElementById('cam-status');
-  st.textContent='Kamera startet...';st.style.color='#8b8aa0';
+  st.textContent=t('camStarting');st.style.color='#8b8aa0';
   try{
     camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}}});
     v.srcObject=camStream;
     if('BarcodeDetector' in window){
-      st.textContent='Auto-Scan aktiv — Barcode in den Rahmen halten';st.style.color='#00d4ff';
+      st.textContent=t('autoScan');st.style.color='#00d4ff';
       const det=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39']});
       camTimer=setInterval(async()=>{
         if(v.readyState<2)return;
@@ -1372,7 +1372,7 @@ async function startCam(){
             clearInterval(camTimer);camTimer=null;
             const code=bc[0].rawValue;
             document.getElementById('inp-barcode').value=code;
-            st.textContent='✓ Erkannt: '+code;
+            st.textContent=t('detected')+code;
             st.style.color='#00e676';
             if(navigator.vibrate)navigator.vibrate(100);
             await doBarcode(code);
@@ -1380,7 +1380,7 @@ async function startCam(){
         }catch(e){}
       },300);
     } else {
-      st.textContent='Kamera aktiv — Auto-Scan nicht verfügbar, Barcode unten eingeben';
+      st.textContent=t('camNoScan');
       st.style.color='#ffab40';
     }
   }catch(e){
@@ -1475,7 +1475,7 @@ function openProf(){document.getElementById('profile-name').value=D.profile.name
 function saveProf(){D.profile.name=document.getElementById('profile-name').value.trim();D.profile.bodyWeight=parseFloat(document.getElementById('profile-weight').value)||0;sv();closeModals();}
 
 function exportCSV(){let csv='Typ,Datum,Details,XP\n';D.workouts.forEach(w=>{const ex=w.exercises.map(e=>`${e.name}: ${e.sets.map(s=>`${s.weight}kg×${s.reps}`).join(', ')}`).join(' | ');csv+=`Workout,"${w.date}","${(w.notes||'')} ${ex}",${w.xpEarned||0}\n`;});D.runs.forEach(r=>{csv+=`Lauf,"${r.date}","${r.distance}km in ${r.duration}min${r.notes?' - '+r.notes:''}",${r.xpEarned||0}\n`;});Object.entries(D.foodLog).forEach(([dt,items])=>{items.forEach(it=>{csv+=`Food,"${dt}","${it.name} ${it.amount}g: ${it.calories}kcal P${it.protein}g C${it.carbs}g F${it.fat}g",0\n`;});});const b=new Blob([csv],{type:'text/csv'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=`grindrank_${new Date().toISOString().slice(0,10)}.csv`;a.click();URL.revokeObjectURL(u);}
-function importCSV(f){const r=new FileReader();r.onload=e=>{try{e.target.result.split('\n').slice(1).forEach(l=>{if(!l.trim())return;const m=l.match(/^(\w+),"([^"]+)","([^"]+)",(\d+)/);if(!m)return;const[,tp,dt,det,xp]=m;if(tp==='Workout')D.workouts.push({id:gid(),date:dt,notes:det,exercises:[],xpEarned:+xp||0});else if(tp==='Lauf'){const mm=det.match(/([\d.]+)km in (\d+)min/);if(mm)D.runs.push({id:gid(),date:dt,distance:+mm[1],duration:+mm[2],notes:'',xpEarned:+xp||0});}});sv();updAll();alert('Import OK!');}catch(e){alert('Import fehlgeschlagen.');}};r.readAsText(f);}
+function importCSV(f){const r=new FileReader();r.onload=e=>{try{e.target.result.split('\n').slice(1).forEach(l=>{if(!l.trim())return;const m=l.match(/^(\w+),"([^"]+)","([^"]+)",(\d+)/);if(!m)return;const[,tp,dt,det,xp]=m;if(tp==='Workout')D.workouts.push({id:gid(),date:dt,notes:det,exercises:[],xpEarned:+xp||0});else if(tp==='Lauf'){const mm=det.match(/([\d.]+)km in (\d+)min/);if(mm)D.runs.push({id:gid(),date:dt,distance:+mm[1],duration:+mm[2],notes:'',xpEarned:+xp||0});}});sv();updAll();alert(t('importOk'));}catch(e){alert(t('importFail'));}};r.readAsText(f);}
 
 function showRankUp(r){const o=document.getElementById('rankup-overlay');document.getElementById('rankup-badge').textContent=r.icon;document.getElementById('rankup-badge').style.borderColor=r.color;document.getElementById('rankup-badge').style.boxShadow=`0 0 60px ${r.color}60`;const n=document.getElementById('rankup-new');n.textContent=r.name;n.style.color=r.color;o.classList.add('active');}
 
@@ -1502,7 +1502,7 @@ document.addEventListener('click',e=>{
     else if(act==='save-food')saveFood();
     else if(act==='save-profile')saveProf();
     else if(act==='export-csv')exportCSV();
-    else if(act==='reset-data'){if(confirm('Alle Daten löschen?')){D=JSON.parse(JSON.stringify(DDEF));sv();updAll();closeModals();}}
+    else if(act==='reset-data'){if(confirm(t('deleteConfirm'))){D=JSON.parse(JSON.stringify(DDEF));sv();updAll();closeModals();}}
     else if(act==='close-modal')closeModals();
     else if(act==='close-scanner')closeScan();
     else if(act==='close-rankup')document.getElementById('rankup-overlay').classList.remove('active');
@@ -1613,24 +1613,72 @@ function getLang(){return D.lang||'de';}
 function setLang(l){D.lang=l;sv();applyLang();}
 
 function applyLang(){
-  const L=getLang();
   // Nav
   document.querySelectorAll('.nav-item').forEach(b=>{const v=b.dataset.view;const sp=b.querySelector('span');if(sp)sp.textContent=t(v);});
-  // Stat labels
-  const labels=document.querySelectorAll('.stat-label');
-  const labelKeys=['workouts','runs','streak','totalXp'];
-  labels.forEach((l,i)=>{if(labelKeys[i])l.textContent=t(labelKeys[i]);});
-  // Section headers etc
+  // Home stat labels
+  const sl=document.querySelectorAll('#view-home .stat-label');
+  ['workouts','runs','streak','totalXp'].forEach((k,i)=>{if(sl[i])sl[i].textContent=t(k);});
   document.querySelector('#view-home .section-header h2').textContent=t('lastActivity');
+  // Gym
   document.querySelector('#view-gym .view-header h2').textContent=t('gym');
   document.querySelector('#view-gym [data-action="new-workout"]').textContent='+ Workout';
+  const gymH=document.querySelectorAll('#view-gym .section-header h3');
+  if(gymH[0])gymH[0].textContent=t('pr');
+  if(gymH[1])gymH[1].textContent=t('workoutLog');
+  // Run
   document.querySelector('#view-run .view-header h2').textContent=t('run');
+  document.querySelector('#view-run [data-action="new-run"]').textContent='+ '+t('run');
+  const rl=document.querySelectorAll('#view-run .stat-label');
+  ['totalKm','runs','bestPace','longestKm'].forEach((k,i)=>{if(rl[i])rl[i].textContent=t(k);});
+  const rh=document.querySelectorAll('#view-run .section-header h3');
+  if(rh[0])rh[0].textContent=t('runTips');
+  if(rh[1])rh[1].textContent=t('runLog');
+  // Food
   document.querySelector('#view-food .view-header h2').textContent=t('nutrition');
-  // Update tips
-  document.getElementById('tip-text').textContent=t('tips')[tipIdx%t('tips').length];
-  // Rankup text
+  document.querySelector('#view-food [data-action="scan-food"]').textContent=t('scan');
+  document.querySelector('#view-food [data-action="add-food"]').textContent=t('manual');
+  const ml=document.querySelectorAll('.daily-macros .macro-label');
+  ['kcal','protein','carbs','fat'].forEach((k,i)=>{if(ml[i])ml[i].textContent=k==='kcal'?'kcal':t(k);});
+  // Workout modal
+  document.querySelector('#modal-workout .modal-header h3').textContent=t('logWorkout');
+  const wl=document.querySelectorAll('#modal-workout label');
+  if(wl[0])wl[0].textContent=t('date');if(wl[1])wl[1].textContent=t('note');
+  document.querySelector('#modal-workout [data-action="add-exercise"]').textContent=t('addExercise');
+  document.querySelector('#modal-workout [data-action="save-workout"]').textContent=t('save');
+  // Run modal
+  document.querySelector('#modal-run .modal-header h3').textContent=t('logRun');
+  const rml=document.querySelectorAll('#modal-run label');
+  if(rml[0])rml[0].textContent=t('date');if(rml[1])rml[1].textContent=t('distKm');if(rml[2])rml[2].textContent=t('durationMin');if(rml[3])rml[3].textContent=t('note');
+  document.querySelector('#modal-run [data-action="save-run"]').textContent=t('save');
+  // Food modal
+  document.querySelector('#modal-food .modal-header h3').textContent=t('addFood');
+  const fml=document.querySelectorAll('#modal-food label');
+  [t('name'),t('amountG'),'kcal',t('protein')+' (g)',t('carbs')+' (g)',t('fat')+' (g)'].forEach((v,i)=>{if(fml[i])fml[i].textContent=v;});
+  document.querySelector('#modal-food [data-action="save-food"]').textContent=t('save');
+  // Recipe modal
+  document.querySelector('#modal-recipe .modal-header h3').textContent=t('createRecipe');
+  const rcl=document.querySelectorAll('#modal-recipe label');
+  [t('recipeName'),t('portionG'),'kcal',t('protein')+' (g)',t('carbs')+' (g)',t('fat')+' (g)'].forEach((v,i)=>{if(rcl[i])rcl[i].textContent=v;});
+  document.querySelector('#modal-recipe [data-action="save-recipe"]').textContent=t('saveRecipe');
+  // Scanner modal
+  document.querySelector('#modal-scanner .modal-header h3').textContent=t('scanProduct');
+  const sps=document.querySelectorAll('#modal-scanner p');
+  sps.forEach(p=>{if(p.textContent.includes('Barcode')||p.textContent.includes('barcode'))p.textContent=t('barcodeManual');if(p.textContent.includes('Name')||p.textContent.includes('name'))p.textContent=t('searchByName');});
+  document.querySelectorAll('#modal-scanner [data-action="do-barcode-search"]').forEach(b=>b.textContent=t('search'));
+  document.querySelectorAll('#modal-scanner [data-action="do-name-search"]').forEach(b=>b.textContent=t('search'));
+  const uf=document.querySelector('#modal-scanner [data-action="use-scanned"]');if(uf)uf.textContent=t('useProduct');
+  // Profile modal
+  document.querySelector('#modal-profile .modal-header h3').textContent=t('profile');
+  const pfl=document.querySelectorAll('#modal-profile label');
+  if(pfl[0])pfl[0].textContent=t('name');if(pfl[1])pfl[1].textContent=t('bodyWeight');
+  document.querySelector('#modal-profile [data-action="export-csv"]').textContent=t('csvExport');
+  document.querySelector('#modal-profile [data-action="reset-data"]').textContent=t('deleteAll');
+  document.querySelector('#modal-profile [data-action="save-profile"]').textContent=t('save');
+  // Rankup
   document.querySelector('.rankup-text').textContent=t('rankUp');
   document.querySelector('[data-action="close-rankup"]').textContent=t('continue');
+  // Tips
+  const tips=t('tips');document.getElementById('tip-text').textContent=tips[tipIdx%tips.length];
   updDash();
 }
 
