@@ -1025,6 +1025,7 @@ body {
     <!-- GYM -->
     <section id="view-gym" class="view">
       <div class="view-header"><h2>Gym</h2><button class="btn btn-primary" data-action="new-workout">+ Workout</button></div>
+      <div id="muscle-ranks" style="margin-bottom:16px"></div>
       <div class="section-header"><h3>Personal Records</h3></div>
       <div class="pr-list" id="pr-list"><div class="empty-state"><p>Logge dein erstes Workout.</p></div></div>
       <div class="section-header"><h3>Workout-Verlauf</h3></div>
@@ -1175,6 +1176,11 @@ body {
   <div class="modal-overlay" id="modal-profile"><div class="modal">
     <div class="modal-header"><h3>Profil</h3><button class="btn-close" data-action="close-modal">&times;</button></div>
     <div class="modal-body">
+      <div class="form-group"><label id="lbl-gender">Geschlecht</label>
+      <div style="display:flex;gap:8px">
+        <button data-action="set-gender" data-g="m" id="btn-gender-m" class="btn btn-secondary" style="flex:1">♂ Mann</button>
+        <button data-action="set-gender" data-g="f" id="btn-gender-f" class="btn btn-secondary" style="flex:1">♀ Frau</button>
+      </div></div>
       <div class="form-group"><label>Name</label><input type="text" id="profile-name" placeholder="Dein Name"></div>
       <div class="form-group"><label>Körpergewicht (kg)</label><input type="number" id="profile-weight" step="0.1" min="0"></div>
       <div class="profile-actions">
@@ -1268,13 +1274,101 @@ const BASIC_FOODS=[
 {name:'Tofu',cal:144,p:17,c:3,f:8},
 ];
 
+// ═══ STRENGTH STANDARDS (1RM als Vielfaches des Körpergewichts) ═══
+const STRENGTH_STD = {
+  'bench press':       { muscle:'Brust',   m:[0.40,0.60,0.80,1.00,1.25,1.50,1.75], f:[0.20,0.35,0.50,0.65,0.80,1.00,1.20] },
+  'incline bench':     { muscle:'Brust',   m:[0.35,0.50,0.70,0.85,1.10,1.30,1.55], f:[0.15,0.30,0.45,0.55,0.70,0.85,1.05] },
+  'dips':              { muscle:'Brust',   m:[0.50,0.70,0.90,1.10,1.30,1.50,1.75], f:[0.25,0.40,0.55,0.70,0.85,1.00,1.20] },
+  'cable fly':         { muscle:'Brust',   m:[0.10,0.15,0.22,0.30,0.38,0.48,0.58], f:[0.06,0.10,0.15,0.20,0.26,0.33,0.40] },
+  'squat':             { muscle:'Beine',   m:[0.50,0.75,1.00,1.25,1.60,2.00,2.40], f:[0.30,0.50,0.75,1.00,1.25,1.50,1.80] },
+  'leg press':         { muscle:'Beine',   m:[0.80,1.20,1.70,2.20,2.80,3.50,4.20], f:[0.50,0.80,1.20,1.60,2.00,2.50,3.00] },
+  'romanian deadlift': { muscle:'Beine',   m:[0.40,0.60,0.85,1.10,1.40,1.70,2.00], f:[0.25,0.40,0.60,0.80,1.00,1.25,1.50] },
+  'leg curl':          { muscle:'Beine',   m:[0.15,0.22,0.32,0.42,0.55,0.68,0.82], f:[0.10,0.15,0.22,0.30,0.38,0.48,0.58] },
+  'leg extension':     { muscle:'Beine',   m:[0.20,0.30,0.42,0.55,0.70,0.88,1.05], f:[0.12,0.20,0.30,0.40,0.50,0.62,0.75] },
+  'calf raise':        { muscle:'Beine',   m:[0.40,0.60,0.85,1.10,1.40,1.75,2.10], f:[0.25,0.40,0.60,0.80,1.00,1.25,1.50] },
+  'deadlift':          { muscle:'Rücken',  m:[0.60,0.90,1.20,1.60,2.00,2.50,3.00], f:[0.40,0.60,0.85,1.10,1.40,1.75,2.10] },
+  'barbell row':       { muscle:'Rücken',  m:[0.35,0.50,0.70,0.90,1.10,1.35,1.60], f:[0.20,0.30,0.45,0.60,0.75,0.90,1.10] },
+  'lat pulldown':      { muscle:'Rücken',  m:[0.30,0.45,0.60,0.80,1.00,1.20,1.45], f:[0.18,0.28,0.42,0.55,0.70,0.85,1.05] },
+  'pull-ups':          { muscle:'Rücken',  m:[0.50,0.70,0.90,1.10,1.30,1.55,1.80], f:[0.25,0.40,0.55,0.70,0.85,1.05,1.25] },
+  'chin-ups':          { muscle:'Rücken',  m:[0.50,0.70,0.90,1.10,1.30,1.55,1.80], f:[0.25,0.40,0.55,0.70,0.85,1.05,1.25] },
+  'overhead press':    { muscle:'Schultern', m:[0.25,0.38,0.52,0.68,0.85,1.00,1.18], f:[0.15,0.22,0.32,0.42,0.55,0.68,0.82] },
+  'lateral raise':     { muscle:'Schultern', m:[0.06,0.09,0.13,0.18,0.24,0.30,0.38], f:[0.03,0.06,0.09,0.12,0.16,0.20,0.25] },
+  'face pull':         { muscle:'Schultern', m:[0.10,0.15,0.22,0.30,0.38,0.48,0.58], f:[0.06,0.10,0.15,0.20,0.26,0.33,0.40] },
+  'bicep curl':        { muscle:'Arme',   m:[0.10,0.16,0.24,0.32,0.42,0.52,0.65], f:[0.06,0.10,0.16,0.22,0.28,0.35,0.44] },
+  'tricep extension':  { muscle:'Arme',   m:[0.10,0.16,0.24,0.32,0.42,0.52,0.65], f:[0.06,0.10,0.16,0.22,0.28,0.35,0.44] },
+};
+
 const SKEY='grindrank_data';
-const DDEF={profile:{name:'',bodyWeight:0,joinDate:new Date().toISOString().slice(0,10)},workouts:[],runs:[],foodLog:{},favorites:[],recipes:[],xp:0,xpHistory:[]};
-function ld(){try{const r=localStorage.getItem(SKEY);if(r)return JSON.parse(r);}catch(e){}return JSON.parse(JSON.stringify(DDEF));}
+const DDEF={profile:{name:'',bodyWeight:0,gender:'m',joinDate:new Date().toISOString().slice(0,10)},workouts:[],runs:[],foodLog:{},favorites:[],recipes:[],xp:0,xpHistory:[]};
+function ld(){try{const r=localStorage.getItem(SKEY);if(r){const d=JSON.parse(r);if(!d.profile.gender)d.profile.gender='m';return d;}}catch(e){}return JSON.parse(JSON.stringify(DDEF));}
 let D=ld(),tipIdx=0,foodDate=new Date().toISOString().slice(0,10),scanProd=null;
 function sv(){try{localStorage.setItem(SKEY,JSON.stringify(D));}catch(e){}}
 function gid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
 function fd(d){const td=new Date().toISOString().slice(0,10),yd=new Date(Date.now()-864e5).toISOString().slice(0,10);if(d===td)return t('today');if(d===yd)return t('yesterday');const p=d.split('-');return`${p[2]}.${p[1]}.${p[0]}`;}
+
+// ═══ STRENGTH RANK FUNKTIONEN ═══
+function getExerciseRank(exerciseName, est1rm) {
+  const bw = D.profile.bodyWeight || 80;
+  const gender = D.profile.gender || 'm';
+  const key = exerciseName.toLowerCase().trim();
+  const std = STRENGTH_STD[key];
+  if (!std) return null;
+  const thresholds = std[gender] || std.m;
+  const ratio = est1rm / bw;
+  const rankNames = ['Iron','Bronze','Silver','Gold','Platinum','Emerald','Diamond','Master','Grandmaster','Challenger'];
+  const rankColors = ['#6b6560','#a0714f','#a8b4bf','#ffd700','#00c9a7','#50c878','#b9f2ff','#9b59b6','#ff4444','#f0c040'];
+  const rankIcons = ['🛡️','⚔️','🌟','👑','💎','🟢','💠','🏆','🔥','⭐'];
+  let rankIdx = 0;
+  for (let i = 0; i < thresholds.length; i++) {
+    if (ratio >= thresholds[i]) rankIdx = i + 1;
+  }
+  if (rankIdx > 7) rankIdx = 7;
+  const idx = Math.min(rankIdx, rankNames.length - 1);
+  return { name: rankNames[idx], color: rankColors[idx], icon: rankIcons[idx], level: rankIdx };
+}
+
+function getMuscleGroupRanks() {
+  const groups = {};
+  const exerciseBest = {};
+  D.workouts.forEach(w => {
+    w.exercises.forEach(ex => {
+      const name = ex.name.toLowerCase().trim();
+      ex.sets.forEach(s => {
+        const est = s.weight * (1 + s.reps / 30);
+        if (!exerciseBest[name] || est > exerciseBest[name]) exerciseBest[name] = est;
+      });
+    });
+  });
+  const exerciseRanks = {};
+  for (const [exName, est1rm] of Object.entries(exerciseBest)) {
+    const rank = getExerciseRank(exName, est1rm);
+    if (rank) {
+      exerciseRanks[exName] = { ...rank, est1rm };
+      const std = STRENGTH_STD[exName];
+      if (std) {
+        if (!groups[std.muscle]) groups[std.muscle] = [];
+        groups[std.muscle].push(rank.level);
+      }
+    }
+  }
+  const muscleRanks = {};
+  const rankNames = ['Iron','Bronze','Silver','Gold','Platinum','Emerald','Diamond','Master'];
+  const rankColors = ['#6b6560','#a0714f','#a8b4bf','#ffd700','#00c9a7','#50c878','#b9f2ff','#9b59b6'];
+  const rankIcons = ['🛡️','⚔️','🌟','👑','💎','🟢','💠','🏆'];
+  const muscleIcons = { 'Brust':'🫁', 'Beine':'🦵', 'Rücken':'🔙', 'Schultern':'🎯', 'Arme':'💪' };
+  for (const [muscle, levels] of Object.entries(groups)) {
+    const avg = Math.round(levels.reduce((a, b) => a + b, 0) / levels.length);
+    const idx = Math.min(avg, rankNames.length - 1);
+    muscleRanks[muscle] = {
+      name: rankNames[idx],
+      color: rankColors[idx],
+      icon: muscleIcons[muscle] || '💪',
+      level: avg,
+      exercises: levels.length
+    };
+  }
+  return { muscleRanks, exerciseRanks };
+}
 
 function addXP(a,reason){const old=rankFor(D.xp);D.xp+=a;D.xpHistory.push({date:new Date().toISOString(),amount:a,reason});const nw=rankFor(D.xp);sv();updDash();if(nw.i>old.i)showRankUp(nw);}
 
@@ -1308,10 +1402,36 @@ function updDash(){
 
 // GYM
 function updGym(){
+  // Muscle group ranks
+  const { muscleRanks, exerciseRanks } = getMuscleGroupRanks();
+  const mrContainer = document.getElementById('muscle-ranks');
+  const muscleEntries = Object.entries(muscleRanks);
+  const muscleNameMap = {
+    de: { 'Brust':'Brust', 'Beine':'Beine', 'Rücken':'Rücken', 'Schultern':'Schultern', 'Arme':'Arme' },
+    en: { 'Brust':'Chest', 'Beine':'Legs', 'Rücken':'Back', 'Schultern':'Shoulders', 'Arme':'Arms' }
+  };
+  const lang = getLang();
+  if (muscleEntries.length > 0 && D.profile.bodyWeight > 0) {
+    mrContainer.innerHTML = `
+      <div class="section-header" style="margin-top:0"><h3>${t('muscleRanks')}</h3></div>
+      ${muscleEntries.map(([muscle, r]) => {
+        const mName = (muscleNameMap[lang]||muscleNameMap.de)[muscle] || muscle;
+        return `<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:#131627;border:1px solid #2a2f4a;border-radius:10px;margin-bottom:6px"><div style="font-size:22px">${r.icon}</div><div style="flex:1"><div style="font-weight:600;font-size:14px">${mName}</div><div style="font-size:11px;color:#8b8aa0">${r.exercises} ${t('exercises')}</div></div><div style="text-align:right"><div style="font-weight:700;font-size:14px;color:${r.color}">${r.name}</div></div></div>`;
+      }).join('')}
+    `;
+  } else if (D.profile.bodyWeight <= 0) {
+    mrContainer.innerHTML = `<div style="padding:12px;background:#131627;border:1px solid #2a2f4a;border-radius:10px;font-size:13px;color:#8b8aa0;text-align:center;margin-bottom:16px">${t('enterWeight')}</div>`;
+  } else {
+    mrContainer.innerHTML = '';
+  }
   const prs={};
   D.workouts.forEach(w=>w.exercises.forEach(ex=>{const n=ex.name.toLowerCase().trim();if(!n)return;ex.sets.forEach(s=>{const e=s.weight*(1+s.reps/30);if(!prs[n]||e>prs[n].e)prs[n]={name:ex.name,w:s.weight,r:s.reps,e}});}));
   const pc=document.getElementById('pr-list'),ent=Object.values(prs).sort((a,b)=>b.e-a.e);
-  pc.innerHTML=ent.length?ent.map(p=>`<div class="pr-item" data-action="show-exercise" data-name="${p.name}" style="cursor:pointer"><div class="pr-name">${p.name}</div><div class="pr-value">${p.w}kg × ${p.r}</div></div>`).join(''):'<div class="empty-state"><p>'+t('logFirst')+'</p></div>';
+  pc.innerHTML=ent.length?ent.map(p=>{
+    const exRank = exerciseRanks[p.name.toLowerCase().trim()];
+    const rankBadge = exRank ? `<span style="font-size:11px;padding:2px 8px;border-radius:12px;background:${exRank.color}22;color:${exRank.color};font-weight:600;margin-left:8px">${exRank.name}</span>` : '';
+    return `<div class="pr-item" data-action="show-exercise" data-name="${p.name}" style="cursor:pointer"><div class="pr-name">${p.name}</div><div style="display:flex;align-items:center"><div class="pr-value">${p.w}kg × ${p.r}</div>${rankBadge}</div></div>`;
+  }).join(''):'<div class="empty-state"><p>'+t('logFirst')+'</p></div>';
   const hc=document.getElementById('workout-history'),wk=[...D.workouts].reverse().slice(0,20);
   hc.innerHTML=wk.length?wk.map(w=>`<div class="history-item" style="position:relative"><div class="history-header"><span class="history-date">${fd(w.date)}</span><span class="history-xp">+${w.xpEarned||0} XP</span></div>${w.notes?`<div class="history-title">${w.notes}</div>`:''}<div class="history-exercises">${w.exercises.map(e=>`<span class="exercise-tag">${e.name} (${e.sets.length}×)</span>`).join('')}</div><button data-action="del-workout" data-wid="${w.id}" style="position:absolute;top:10px;right:10px;background:none;border:none;color:#5c5b72;cursor:pointer;font-size:18px;padding:4px;line-height:1">&times;</button></div>`).join(''):'<div class="empty-state"><p>'+t('noWorkouts')+'</p></div>';
 }
@@ -1488,8 +1608,18 @@ function pickResult(i){
 function useScanned(){if(!scanProd)return;closeScan();openFood(scanProd);}
 
 // PROFILE
-function openProf(){document.getElementById('profile-name').value=D.profile.name;document.getElementById('profile-weight').value=D.profile.bodyWeight||'';document.getElementById('modal-profile').classList.add('active');}
-function saveProf(){D.profile.name=document.getElementById('profile-name').value.trim();D.profile.bodyWeight=parseFloat(document.getElementById('profile-weight').value)||0;sv();closeModals();}
+function openProf(){
+  document.getElementById('profile-name').value=D.profile.name;
+  document.getElementById('profile-weight').value=D.profile.bodyWeight||'';
+  // Highlight active gender button
+  const g=D.profile.gender||'m';
+  document.getElementById('btn-gender-m').style.borderColor=g==='m'?'var(--color-accent)':'var(--color-border)';
+  document.getElementById('btn-gender-m').style.color=g==='m'?'var(--color-accent)':'';
+  document.getElementById('btn-gender-f').style.borderColor=g==='f'?'var(--color-accent)':'var(--color-border)';
+  document.getElementById('btn-gender-f').style.color=g==='f'?'var(--color-accent)':'';
+  document.getElementById('modal-profile').classList.add('active');
+}
+function saveProf(){D.profile.name=document.getElementById('profile-name').value.trim();D.profile.bodyWeight=parseFloat(document.getElementById('profile-weight').value)||0;if(!D.profile.gender)D.profile.gender='m';sv();closeModals();}
 
 function exportCSV(){let csv='Typ,Datum,Details,XP\n';D.workouts.forEach(w=>{const ex=w.exercises.map(e=>`${e.name}: ${e.sets.map(s=>`${s.weight}kg×${s.reps}`).join(', ')}`).join(' | ');csv+=`Workout,"${w.date}","${(w.notes||'')} ${ex}",${w.xpEarned||0}\n`;});D.runs.forEach(r=>{csv+=`Lauf,"${r.date}","${r.distance}km in ${r.duration}min${r.notes?' - '+r.notes:''}",${r.xpEarned||0}\n`;});Object.entries(D.foodLog).forEach(([dt,items])=>{items.forEach(it=>{csv+=`Food,"${dt}","${it.name} ${it.amount}g: ${it.calories}kcal P${it.protein}g C${it.carbs}g F${it.fat}g",0\n`;});});const b=new Blob([csv],{type:'text/csv'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=`grindrank_${new Date().toISOString().slice(0,10)}.csv`;a.click();URL.revokeObjectURL(u);}
 function importCSV(f){const r=new FileReader();r.onload=e=>{try{e.target.result.split('\n').slice(1).forEach(l=>{if(!l.trim())return;const m=l.match(/^(\w+),"([^"]+)","([^"]+)",(\d+)/);if(!m)return;const[,tp,dt,det,xp]=m;if(tp==='Workout')D.workouts.push({id:gid(),date:dt,notes:det,exercises:[],xpEarned:+xp||0});else if(tp==='Lauf'){const mm=det.match(/([\d.]+)km in (\d+)min/);if(mm)D.runs.push({id:gid(),date:dt,distance:+mm[1],duration:+mm[2],notes:'',xpEarned:+xp||0});}});sv();updAll();alert(t('importOk'));}catch(e){alert(t('importFail'));}};r.readAsText(f);}
@@ -1661,6 +1791,7 @@ document.addEventListener('click',e=>{
     else if(act==='save-run')saveRun();
     else if(act==='save-food')saveFood();
     else if(act==='save-profile')saveProf();
+    else if(act==='set-gender'){const g=a.dataset.g;D.profile.gender=g;document.getElementById('btn-gender-m').style.borderColor=g==='m'?'var(--color-accent)':'var(--color-border)';document.getElementById('btn-gender-m').style.color=g==='m'?'var(--color-accent)':'';document.getElementById('btn-gender-f').style.borderColor=g==='f'?'var(--color-accent)':'var(--color-border)';document.getElementById('btn-gender-f').style.color=g==='f'?'var(--color-accent)':'';}
     else if(act==='export-csv')exportCSV();
     else if(act==='reset-data'){if(confirm(t('deleteConfirm'))){D=JSON.parse(JSON.stringify(DDEF));sv();updAll();closeModals();}}
     else if(act==='show-exercise'){const name=a.dataset.name;showExerciseDetail(name);}
@@ -1705,6 +1836,10 @@ document.getElementById('inp-amount').addEventListener('input', updateAmountMacr
 // ═══ SPRACHE / i18n ═══
 const I18N={
 de:{
+  gender:'Geschlecht',male:'\u2642 Mann',female:'\u2640 Frau',
+  muscleRanks:'Muskelgruppen-R\u00e4nge',
+  enterWeight:'Trage dein K\u00f6rpergewicht im Profil ein, um Muskelgruppen-R\u00e4nge zu sehen.',
+  exercises:'\u00dcbungen',
   home:'Home',gym:'Gym',run:'Laufen',food:'Food',
   workouts:'Workouts',runs:'L\u00e4ufe',streak:'Streak',totalXp:'Gesamt XP',
   lastActivity:'Letzte Aktivit\u00e4t',noActivity:'Noch keine Aktivit\u00e4t.',
@@ -1748,6 +1883,10 @@ de:{
   tips:['Starte mit Couch-to-5K: 1 Min Laufen, 1 Min Gehen. Jede Woche steigern.','Lauf langsam genug, dass du dich unterhalten k\u00f6nntest.','Investiere in gute Laufschuhe \u2014 wichtigstes Equipment.','10%-Regel: Nie mehr als 10% Volumen pro Woche steigern.','5 Min Aufw\u00e4rmen mit z\u00fcgigem Gehen vor dem Lauf.','3x pro Woche reicht. Dein K\u00f6rper braucht Erholungstage.','Atem-Rhythmus: 3 Schritte ein, 2 Schritte aus.','Musik oder Podcasts wirken Wunder f\u00fcr die Motivation.','Morgens laufen gibt dir Energie f\u00fcr den ganzen Tag.','Konkretes Ziel setzen: z.B. 5 km in 30 Min.'],
 },
 en:{
+  gender:'Gender',male:'\u2642 Male',female:'\u2640 Female',
+  muscleRanks:'Muscle Group Ranks',
+  enterWeight:'Enter your body weight in profile to see muscle group ranks.',
+  exercises:'exercises',
   home:'Home',gym:'Gym',run:'Run',food:'Food',
   workouts:'Workouts',runs:'Runs',streak:'Streak',totalXp:'Total XP',
   lastActivity:'Recent Activity',noActivity:'No activity yet.',
@@ -1853,8 +1992,12 @@ function applyLang(){
   const uf=document.querySelector('#modal-scanner [data-action="use-scanned"]');if(uf)uf.textContent=t('useProduct');
   // Profile modal
   document.querySelector('#modal-profile .modal-header h3').textContent=t('profile');
+  const lblGender=document.getElementById('lbl-gender');if(lblGender)lblGender.textContent=t('gender');
+  const btnGm=document.getElementById('btn-gender-m');if(btnGm)btnGm.textContent=t('male');
+  const btnGf=document.getElementById('btn-gender-f');if(btnGf)btnGf.textContent=t('female');
   const pfl=document.querySelectorAll('#modal-profile label');
-  if(pfl[0])pfl[0].textContent=t('name');if(pfl[1])pfl[1].textContent=t('bodyWeight');
+  // pfl[0] = gender label (id-based above), pfl[1] = name, pfl[2] = bodyWeight
+  if(pfl[1])pfl[1].textContent=t('name');if(pfl[2])pfl[2].textContent=t('bodyWeight');
   document.querySelector('#modal-profile [data-action="export-csv"]').textContent=t('csvExport');
   document.querySelector('#modal-profile [data-action="reset-data"]').textContent=t('deleteAll');
   document.querySelector('#modal-profile [data-action="save-profile"]').textContent=t('save');
